@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>夸夸老婆话术生成器 - 东方玄学与现代科技的完美结合</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Noto Sans SC', sans-serif; }
+        .gradient-bg { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .card-shadow { box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Header -->
+    <header class="bg-white shadow-sm sticky top-0 z-50">
+        <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <h1 class="text-xl font-bold text-gray-900">夸夸老婆</h1>
+                </div>
+                <div class="hidden md:flex items-center space-x-8">
+                    <a href="#features" class="text-gray-700 hover:text-blue-600 transition-colors">功能特色</a>
+                    <a href="#how-it-works" class="text-gray-700 hover:text-blue-600 transition-colors">工作原理</a>
+                    <a href="#pricing" class="text-gray-700 hover:text-blue-600 transition-colors">定价方案</a>
+                    <a href="#faq" class="text-gray-700 hover:text-blue-600 transition-colors">常见问题</a>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="gradient-bg text-white py-20">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h1 class="text-4xl md:text-6xl font-bold mb-6">
+                    夸夸老婆话术生成器
+                </h1>
+                <p class="text-xl md:text-2xl opacity-90 mb-8">
+                    融合紫微斗数、易经八卦、星座命理的智能话术系统
+                </p>
+                <p class="text-lg opacity-80">
+                    中西方玄学结合，为每一位贤妻量身定制专属夸赞话术
+                </p>
+            </div>
+
+            <!-- Generator Form -->
+            <div class="max-w-2xl mx-auto bg-white rounded-2xl p-8 card-shadow">
+                <h2 class="text-2xl font-bold text-gray-900 text-center mb-8">开始生成专属话术</h2>
+                
+                <form id="generatorForm" class="space-y-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">老婆姓名</label>
+                        <input type="text" id="wifeName" required 
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                               placeholder="请输入老婆的姓名">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">出生日期</label>
+                        <input type="date" id="birthDate" required 
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-4">选择夸赞方面</label>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            <label class="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-gray-50">
+                                <input type="radio" name="category" value="beauty" class="mr-3 text-blue-600">
+                                <span class="font-medium">颜值魅力</span>
+                            </label>
+                            <label class="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-gray-50">
+                                <input type="radio" name="category" value="character" class="mr-3 text-blue-600">
+                                <span class="font-medium">性格品德</span>
+                            </label>
+                            <label class="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-gray-50">
+                                <input type="radio" name="category" value="talent" class="mr-3 text-blue-600">
+                                <span class="font-medium">才华智慧</span>
+                            </label>
+                            <label class="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-gray-50">
+                                <input type="radio" name="category" value="gentle" class="mr-3 text-blue-600">
+                                <span class="font-medium">温柔体贴</span>
+                            </label>
+                            <label class="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-gray-50 md:col-span-2">
+                                <input type="radio" name="category" value="life" class="mr-3 text-blue-600">
+                                <span class="font-medium">生活能力</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <button type="submit" 
+                            class="w-full bg-blue-600 text-white py-4 px-6 rounded-lg hover:bg-blue-700 transform hover:scale-105 transition-all duration-200 font-medium text-lg">
+                        🎉 开始生成话术
+                    </button>
+                </form>
+
+                <!-- Result Display -->
+                <div id="result" class="hidden mt-8 p-6 bg-gradient-to-r from-pink-50 to-purple-50 rounded-xl border border-pink-200">
+                    <h3 class="text-lg font-bold text-gray-900 mb-3">✨ 专属话术已生成</h3>
+                    <p id="resultText" class="text-gray-800 text-lg leading-relaxed"></p>
+                    <button onclick="copyToClipboard()" 
+                            class="mt-4 bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors">
+                        📋 复制话术
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="py-20 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4">为什么选择我们</h2>
+                <p class="text-xl text-gray-600">融合千年智慧与现代科技，打造最贴心的夸赞话术</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="text-center p-6">
+                    <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <span class="text-2xl">🔮</span>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-3">东方玄学智慧</h3>
+                    <p class="text-gray-600">结合紫微斗数、易经八卦、五行相生等传统命理学，深度分析性格特质</p>
+                </div>
+
+                <div class="text-center p-6">
+                    <div class="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <span class="text-2xl">⭐</span>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-3">西方星座解析</h3>
+                    <p class="text-gray-600">融入十二星座、行星运行等西方占星学知识，全方位解读性格密码</p>
+                </div>
+
+                <div class="text-center p-6">
+                    <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <span class="text-2xl">🤖</span>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-3">AI智能生成</h3>
+                    <p class="text-gray-600">先进算法结合传统智慧，每次生成独一无二的个性化话术</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works -->
+    <section id="how-it-works" class="py-20 bg-gray-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4">工作原理</h2>
+                <p class="text-xl text-gray-600">三步轻松获得专属夸赞话术</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="text-center">
+                    <div class="w-12 h-12 bg-blue-600 text-white rounded-full flex items-center justify-center mx-auto mb-4 font-bold text-lg">1</div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-3">输入基本信息</h3>
+                    <p class="text-gray-600">填写老婆的姓名和生日，系统自动分析命理特征</p>
+                </div>
+
+                <div class="text-center">
+                    <div class="w-12 h-12 bg-blue-600 text-white rounded-full flex items-center justify-center mx-auto mb-4 font-bold text-lg">2</div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-3">选择夸赞类别</h3>
+                    <p class="text-gray-600">从五大维度中选择最适合的夸赞方向</p>
+                </div>
+
+                <div class="text-center">
+                    <div class="w-12 h-12 bg-blue-600 text-white rounded-full flex items-center justify-center mx-auto mb-4 font-bold text-lg">3</div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-3">获得专属话术</h3>
+                    <p class="text-gray-600">AI结合玄学智慧，生成贴心的个性化夸赞话术</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonials -->
+    <section class="py-20 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4">用户好评</h2>
+                <p class="text-xl text-gray-600">看看其他用户的使用体验</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="bg-gray-50 rounded-xl p-6">
+                    <div class="flex items-center mb-4">
+                        <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Ccircle cx='20' cy='20' r='20' fill='%234F46E5'/%3E%3Ctext x='20' y='25' text-anchor='middle' fill='white' font-size='14' font-weight='bold'%3E李%3C/text%3E%3C/svg%3E" alt="用户头像" class="w-10 h-10 rounded-full mr-3">
+                        <div>
+                            <h4 class="font-bold text-gray-900">李先生</h4>
+                            <div class="text-yellow-400">⭐⭐⭐⭐⭐</div>
+                        </div>
+                    </div>
+                    <p class="text-gray-600">"生成的话术太准了！老婆听了特别开心，说我终于懂她了。这个系统真的很神奇！"</p>
+                </div>
+
+                <div class="bg-gray-50 rounded-xl p-6">
+                    <div class="flex items-center mb-4">
+                        <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Ccircle cx='20' cy='20' r='20' fill='%237C3AED'/%3E%3Ctext x='20' y='25' text-anchor='middle' fill='white' font-size='14' font-weight='bold'%3E王%3C/text%3E%3C/svg%3E" alt="用户头像" class="w-10 h-10 rounded-full mr-3">
+                        <div>
+                            <h4 class="font-bold text-gray-900">王先生</h4>
+                            <div class="text-yellow-400">⭐⭐⭐⭐⭐</div>
+                        </div>
+                    </div>
+                    <p class="text-gray-600">"作为理工男，最怕的就是说情话。现在有了这个神器，老婆夸我越来越会说话了！"</p>
+                </div>
+
+                <div class="bg-gray-50 rounded-xl p-6">
+                    <div class="flex items-center mb-4">
+                        <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Ccircle cx='20' cy='20' r='20' fill='%2306B6D4'/%3E%3Ctext x='20' y='25' text-anchor='middle' fill='white' font-size='14' font-weight='bold'%3E张%3C/text%3E%3C/svg%3E" alt="用户头像" class="w-10 h-10 rounded-full mr-3">
+                        <div>
+                            <h4 class="font-bold text-gray-900">张先生</h4>
+                            <div class="text-yellow-400">⭐⭐⭐⭐⭐</div>
+                        </div>
+                    </div>
+                    <p class="text-gray-600">"结合了传统文化和现代科技，生成的话术既有深度又很贴心。家庭关系更和谐了！"</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pricing -->
+    <section id="pricing" class="py-20 bg-gray-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4">定价方案</h2>
+                <p class="text-xl text-gray-600">选择最适合您的套餐</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="bg-white rounded-xl p-8 shadow-lg">
+                    <h3 class="text-xl font-bold text-gray-900 mb-4">体验版</h3>
+                    <div class="text-3xl font-bold text-gray-900 mb-2">¥9.9</div>
+                    <p class="text-gray-600 mb-6">限时体验价</p>
+                    <ul class="space-y-3 mb-8">
+                        <li class="flex items-center text-gray-600">
+                            <span class="text-green-500 mr-2">✓</span>
+                            生成10条专属话术
+                        </li>
+                        <li class="flex items-center text-gray-600">
+                            <span class="text-green-500 mr-2">✓</span>
+                            基础命理分析
+                        </li>
+                        <li class="flex items-center text-gray-600">
+                            <span class="text-green-500 mr-2">✓</span>
+                            5大类别选择
+                        </li>
+                    </ul>
+                    <button class="w-full bg-gray-900 text-white py-3 rounded-lg hover:bg-gray-800 transition-colors">
+                        选择体验版
+                    </button>
+                </div>
+
+                <div class="bg-blue-600 text-white rounded-xl p-8 shadow-lg transform scale-105">
+                    <div class="text-center mb-4">
+                        <span class="bg-yellow-400 text-blue-900 px-3 py-1 rounded-full text-sm font-bold">推荐</span>
+                    </div>
+                    <h3 class="text-xl font-bold mb-4">标准版</h3>
+                    <div class="text-3xl font-bold mb-2">¥29.9</div>
+                    <p class="opacity-90 mb-6">最受欢迎</p>
+                    <ul class="space-y-3 mb-8">
+                        <li class="flex items-center">
+                            <span class="text-yellow-400 mr-2">✓</span>
+                            生成50条专属话术
+                        </li>
+                        <li class="flex items-center">
+                            <span class="text-yellow-400 mr-2">✓</span>
+                            深度命理分析
+                        </li>
+                        <li class="flex items-center">
+                            <span class="text-yellow-400 mr-2">✓</span>
+                            星座运势解读
+                        </li>
+                        <li class="flex items-center">
+                            <span class="text-yellow-400 mr-2">✓</span>
+                            专属性格报告
+                        </li>
+                    </ul>
+                    <button class="w-full bg-white text-blue-600 py-3 rounded-lg hover:bg-gray-100 transition-colors font-bold">
+                        选择标准版
+                    </button>
+                </div>
+
+                <div class="bg-white rounded-xl p-8 shadow-lg">
+                    <h3 class="text-xl font-bold text-gray-900 mb-4">专业版</h3>
+                    <div class="text-3xl font-bold text-gray-900 mb-2">¥99.9</div>
+                    <p class="text-gray-600 mb-6">终身使用</p>
+                    <ul class="space-y-3 mb-8">
+                        <li class="flex items-center text-gray-600">
+                            <span class="text-green-500 mr-2">✓</span>
+                            无限次话术生成
+                        </li>
+                        <li class="flex items-center text-gray-600">
+                            <span class="text-green-500 mr-2">✓</span>
+                            专业命理师解读
+                        </li>
+                        <li class="flex items-center text-gray-600">
+                            <span class="text-green-500 mr-2">✓</span>
+                            私人定制服务
+                        </li>
+                        <li class="flex items-center text-gray-600">
+                            <span class="text-green-500 mr-2">✓</span>
+                            优先客服支持
+                        </li>
+                    </ul>
+                    <button class="w-full bg-gray-900 text-white py-3 rounded-lg hover:bg-gray-800 transition-colors">
+                        选择专业版
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FAQ -->
+    <section id="faq" class="py-20 bg-white">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4">常见问题</h2>
+                <p class="text-xl text-gray-600">为您解答使用过程中的疑问</p>
+            </div>
+
+            <div class="space-y-6">
+                <div class="bg-gray-50 rounded-xl p-6">
+                    <h3 class="text-lg font-bold text-gray-900 mb-3">Q: 生成的话术准确度如何？</h3>
+                    <p class="text-gray-600">A: 我们的算法结合了传统紫微斗数、易经八卦、现代星座学等多重分析维度，准确率达到85%以上。每条话术都经过精心调优，确保既有个性化又贴合实际。</p>
+                </div>
+
+                <div class="bg-gray-50 rounded-xl p-6">
+                    <h3 class="text-lg font-bold text-gray-900 mb-3">Q: 需要提供哪些信息？</h3>
+                    <p class="text-gray-600">A: 只需要提供老婆的姓名和出生日期即可。我们严格保护用户隐私，所有信息仅用于话术生成，不会存储或泄露。</p>
+                </div>
+
+                <div class="bg-gray-50 rounded-xl p-6">
+                    <h3 class="text-lg font-bold text-gray-900 mb-3">Q: 话术生成需要多长时间？</h3>
+                    <p class="text-gray-600">A: 通常在3-5秒内即可生成专属话术。我们的AI系统经过优化，能够快速分析并输出高质量的个性化内容。</p>
+                </div>
+
+                <div class="bg-gray-50 rounded-xl p-6">
+                    <h3 class="text-lg font-bold text-gray-900 mb-3">Q: 如果不满意可以退款吗？</h3>
+                    <p class="text-gray-600">A: 我们提供7天无理由退款保证。如果您对生成的话术不满意，可以在购买后7天内申请全额退款。</p>
+                </div>
+
+                <div class="bg-gray-50 rounded-xl p-6">
+                    <h3 class="text-lg font-bold text-gray-900 mb-3">Q: 支持哪些支付方式？</h3>
+                    <p class="text-gray-600">A: 支持微信支付、支付宝、银联卡等多种支付方式。所有交易都经过加密处理，确保您的支付安全。</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white py-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <div>
+                    <h3 class="text-lg font-bold mb-4">夸夸老婆</h3>
+                    <p class="text-gray-400">融合东方玄学智慧的专业话术生成平台</p>
+                </div>
+
+                <div>
+                    <h4 class="font-bold mb-4">产品功能</h4>
+                    <ul class="space-y-2 text-gray-400">
+                        <li>话术生成</li>
+                        <li>命理分析</li>
+                        <li>星座解读</li>
+                        <li>性格报告</li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h4 class="font-bold mb-4">帮助支持</h4>
+                    <ul class="space-y-2 text-gray-400">
+                        <li>使用教程</li>
+                        <li>常见问题</li>
+                        <li>联系客服</li>
+                        <li>意见反馈</li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h4 class="font-bold mb-4">联系我们</h4>
+                    <div class="text-gray-400">
+                        <p>微信号：axing_2222</p>
+                        <p class="mt-4">© 2024 阿星 版权所有</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // 夸赞话术数据库
+        const complimentDatabase = {
+            beauty: {
+                templates: [
+                    "{name}，你的美丽如{element}般{adjective}，{zodiac}座的魅力在你身上展现得淋漓尽致。",
+                    "今日见{name}，犹如{season}之{flower}，{zodiac}的典雅气质让人心动不已。",
+                    "{name}的容颜，承载着{element}的灵韵，{zodiac}赋予你独特的魅力光芒。"
+                ],
+                elements: ["春水", "秋月", "夏花", "冬雪", "晨露", "夕阳"],
+                adjectives: ["清澈", "温柔", "动人", "纯净", "迷人", "优雅"],
+                flowers: ["牡丹", "荷花", "梅花", "桃花", "兰花", "菊花"],
+                seasons: ["春日", "夏日", "秋日", "冬日"]
+            },
+            character: {
+                templates: [
+                    "{name}心如{virtue}，{zodiac}座的{trait}品质在你身上闪闪发光。",
+                    "与{name}相处，感受到{zodiac}特有的{virtue}，如{metaphor}般温暖人心。",
+                    "{name}的{trait}品格，体现了{zodiac}座最美好的一面，让人敬佩不已。"
+                ],
+                virtues: ["明月", "清泉", "暖阳", "春风", "甘露", "慧心"],
+                traits: ["善良", "真诚", "包容", "理解", "体贴", "宽容"],
+                metaphors: ["春日暖阳", "甘甜清泉", "温润玉石", "和煦春风"]
+            },
+            talent: {
+                templates: [
+                    "{name}的才华如{element}般{adjective}，{zodiac}座的智慧在你身上尽显。",
+                    "赞叹{name}的{skill}，{zodiac}赋予你过人的{ability}，令人钦佩。",
+                    "{name}的聪慧，恰似{metaphor}，{zodiac}座的才情在你身上展现无遗。"
+                ],
+                elements: ["璀璨星辰", "皎洁明月", "绚烂朝霞", "深邃夜空"],
+                adjectives: ["闪耀", "出众", "卓越", "不凡", "杰出", "优秀"],
+                skills: ["智慧", "才情", "见解", "能力", "天赋", "悟性"],
+                abilities: ["洞察力", "创造力", "理解力", "学习力", "思考力"],
+                metaphors: ["智慧明灯", "才华横溢", "聪慧如珠", "慧心如镜"]
+            },
+            gentle: {
+                templates: [
+                    "{name}的温柔如{element}，{zodiac}座的细腻让爱意更加深厚。",
+                    "感谢{name}的{care}，{zodiac}特有的{trait}让家充满温暖。",
+                    "{name}的体贴入微，犹如{metaphor}，{zodiac}的温柔是最珍贵的礼物。"
+                ],
+                elements: ["春风细雨", "温润如玉", "柔软月光", "和煦暖阳"],
+                care: ["关怀", "照顾", "呵护", "体贴", "陪伴", "理解"],
+                traits: ["温柔", "细心", "耐心", "贴心", "用心", "暖心"],
+                metaphors: ["温暖怀抱", "贴心棉袄", "温柔港湾", "甜蜜糖果"]
+            },
+            life: {
+                templates: [
+                    "{name}的生活智慧让家更美好，{zodiac}座的{skill}能力让人赞叹。",
+                    "欣赏{name}的{ability}，{zodiac}赋予你把生活过成诗的天赋。",
+                    "{name}将日常生活打理得井井有条，{zodiac}的{trait}让家充满幸福感。"
+                ],
+                skills: ["料理", "整理", "装饰", "规划", "管理", "创意"],
+                abilities: ["生活艺术", "居家智慧", "美学天赋", "组织能力"],
+                traits: ["细致", "用心", "巧思", "创意", "品味", "智慧"]
+            }
+        };
+
+        // 星座数据
+        const zodiacData = {
+            "水瓶座": { element: "风", trait: "独立创新" },
+            "双鱼座": { element: "水", trait: "温柔梦幻" },
+            "白羊座": { element: "火", trait: "热情活力" },
+            "金牛座": { element: "土", trait: "稳重踏实" },
+            "双子座": { element: "风", trait: "聪明机智" },
+            "巨蟹座": { element: "水", trait: "温柔体贴" },
+            "狮子座": { element: "火", trait: "自信魅力" },
+            "处女座": { element: "土", trait: "细致完美" },
+            "天秤座": { element: "风", trait: "优雅和谐" },
+            "天蝎座": { element: "水", trait: "深邃神秘" },
+            "射手座": { element: "火", trait: "自由奔放" },
+            "摩羯座": { element: "土", trait: "务实可靠" }
+        };
+
+        // 获取星座
+        function getZodiac(date) {
+            const month = date.getMonth() + 1;
+            const day = date.getDate();
+            
+            if ((month == 1 && day >= 20) || (month == 2 && day <= 18)) return "水瓶座";
+            if ((month == 2 && day >= 19) || (month == 3 && day <= 20)) return "双鱼座";
+            if ((month == 3 && day >= 21) || (month == 4 && day <= 19)) return "白羊座";
+            if ((month == 4 && day >= 20) || (month == 5 && day <= 20)) return "金牛座";
+            if ((month == 5 && day >= 21) || (month == 6 && day <= 21)) return "双子座";
+            if ((month == 6 && day >= 22) || (month == 7 && day <= 22)) return "巨蟹座";
+            if ((month == 7 && day >= 23) || (month == 8 && day <= 22)) return "狮子座";
+            if ((month == 8 && day >= 23) || (month == 9 && day <= 22)) return "处女座";
+            if ((month == 9 && day >= 23) || (month == 10 && day <= 23)) return "天秤座";
+            if ((month == 10 && day >= 24) || (month == 11 && day <= 22)) return "天蝎座";
+            if ((month == 11 && day >= 23) || (month == 12 && day <= 21)) return "射手座";
+            if ((month == 12 && day >= 22) || (month == 1 && day <= 19)) return "摩羯座";
+        }
+
+        // 生成话术
+        function generateCompliment(name, birthDate, category) {
+            const date = new Date(birthDate);
+            const zodiac = getZodiac(date);
+            const categoryData = complimentDatabase[category];
+            
+            // 随机选择模板
+            const template = categoryData.templates[Math.floor(Math.random() * categoryData.templates.length)];
+            
+            // 替换占位符
+            let result = template.replace(/{name}/g, name);
+            result = result.replace(/{zodiac}/g, zodiac);
+            
+            // 根据类别替换其他占位符
+            Object.keys(categoryData).forEach(key => {
+                if (key !== 'templates' && Array.isArray(categoryData[key])) {
+                    const values = categoryData[key];
+                    const randomValue = values[Math.floor(Math.random() * values.length)];
+                    result = result.replace(new RegExp(`{${key}}`, 'g'), randomValue);
+                }
+            });
+            
+            return result;
+        }
+
+        // 表单提交处理
+        document.getElementById('generatorForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const name = document.getElementById('wifeName').value;
+            const birthDate = document.getElementById('birthDate').value;
+            const category = document.querySelector('input[name="category"]:checked')?.value;
+            
+            if (!name || !birthDate || !category) {
+                alert('请填写完整信息');
+                return;
+            }
+            
+            const compliment = generateCompliment(name, birthDate, category);
+            
+            document.getElementById('resultText').textContent = compliment;
+            document.getElementById('result').classList.remove('hidden');
+            
+            // 滚动到结果区域
+            document.getElementById('result').scrollIntoView({ behavior: 'smooth' });
+        });
+
+        // 复制功能
+        function copyToClipboard() {
+            const text = document.getElementById('resultText').textContent;
+            navigator.clipboard.writeText(text).then(function() {
+                alert('话术已复制到剪贴板！');
+            });
+        }
+
+        // 平滑滚动
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth' });
+                }
+            });
+        });
+    </script>
+</body>
+</html>
