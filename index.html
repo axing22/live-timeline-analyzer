@@ -4,12 +4,310 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>夸夸老婆话术生成器 - 东方玄学与现代科技的完美结合</title>
+    <meta name="description" content="融合紫微斗数、易经八卦、星座命理的智能话术生成器，为您量身定制专属夸赞话术。中西方玄学结合，让爱情更甜蜜。">
+    <meta name="keywords" content="夸老婆,话术生成器,紫微斗数,易经八卦,星座命理,情感工具,爱情助手">
+    
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=GA_MEASUREMENT_ID"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'GA_MEASUREMENT_ID');
+    </script>
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;600;700&display=swap');
-        body { font-family: 'Noto Sans SC', sans-serif; }
-        .gradient-bg { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
-        .card-shadow { box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Noto+Sans+SC:wght@300;400;500;600;700;800&display=swap');
+        
+        * {
+            box-sizing: border-box;
+        }
+        
+        body { 
+            font-family: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, sans-serif;
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+        
+        .hero-gradient { 
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #d946ef 100%);
+            background-size: 200% 200%;
+            animation: gradientShift 8s ease infinite;
+        }
+        
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        
+        .glass-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 
+                0 20px 25px -5px rgba(0, 0, 0, 0.1),
+                0 10px 10px -5px rgba(0, 0, 0, 0.04),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        }
+        
+        .premium-input {
+            background: #ffffff;
+            border: 2px solid #e5e7eb;
+            color: #111827 !important;
+            font-weight: 500;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-size: 16px;
+        }
+        
+        .premium-input:focus {
+            background: #ffffff;
+            border-color: #6366f1;
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+            outline: none;
+            transform: translateY(-1px);
+            color: #111827 !important;
+        }
+        
+        .premium-input::placeholder {
+            color: #9ca3af;
+            font-weight: 400;
+        }
+        
+        .radio-card {
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            border: 2px solid #e2e8f0;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .radio-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.05) 0%, rgba(139, 92, 246, 0.05) 100%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .radio-card:hover {
+            border-color: #6366f1;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+        
+        .radio-card:hover::before {
+            opacity: 1;
+        }
+        
+        .radio-card.selected {
+            border-color: #6366f1;
+            background: linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%);
+            transform: translateY(-1px);
+        }
+        
+        .radio-card.selected::before {
+            opacity: 1;
+        }
+        
+        .premium-button {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            border: none;
+            color: white;
+            font-weight: 600;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .premium-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+        
+        .premium-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 20px 25px -5px rgba(99, 102, 241, 0.4);
+        }
+        
+        .premium-button:hover::before {
+            left: 100%;
+        }
+        
+        .premium-button:active {
+            transform: translateY(0);
+        }
+        
+        .result-card {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            border: 2px solid #f59e0b;
+            animation: resultAppear 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 10px 25px -5px rgba(245, 158, 11, 0.2);
+        }
+        
+        @keyframes resultAppear {
+            from {
+                opacity: 0;
+                transform: translateY(20px) scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+        
+        .section-card {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+        }
+        
+        .section-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+        
+        .feature-icon {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .pricing-card {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .pricing-card:hover {
+            transform: translateY(-8px);
+        }
+        
+        .pricing-popular {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            color: white;
+            transform: scale(1.05);
+        }
+        
+        .pricing-popular:hover {
+            transform: scale(1.05) translateY(-8px);
+        }
+        
+        .testimonial-card {
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            border-left: 4px solid #6366f1;
+        }
+        
+        .smooth-scroll {
+            scroll-behavior: smooth;
+        }
+        
+        /* 移动端优化 */
+        @media (max-width: 768px) {
+            .hero-gradient {
+                padding: 3rem 0;
+            }
+            
+            .glass-card {
+                margin: 1rem;
+                padding: 1.5rem;
+            }
+            
+            .premium-button {
+                padding: 1rem;
+                font-size: 1rem;
+            }
+        }
+        
+        /* 深色模式适配 */
+        @media (prefers-color-scheme: dark) {
+            .glass-card {
+                background: rgba(17, 24, 39, 0.95);
+                border: 1px solid rgba(75, 85, 99, 0.3);
+            }
+            
+            .premium-input {
+                background: #ffffff !important;
+                border-color: #d1d5db;
+                color: #111827 !important;
+            }
+            
+            .premium-input:focus {
+                background: #ffffff !important;
+                border-color: #6366f1;
+                color: #111827 !important;
+            }
+            
+            .premium-input::placeholder {
+                color: #6b7280 !important;
+            }
+        }
+        
+        /* 移动端输入框优化 */
+        @media (max-width: 768px) {
+            .premium-input {
+                font-size: 16px;
+                padding: 1rem 1.5rem;
+            }
+        }
+        
+        /* 确保输入框在所有情况下都有正确的文字颜色 */
+        input[type="text"], input[type="date"] {
+            color: #111827 !important;
+            -webkit-text-fill-color: #111827 !important;
+        }
+        
+        input[type="text"]:focus, input[type="date"]:focus {
+            color: #111827 !important;
+            -webkit-text-fill-color: #111827 !important;
+        }
+        
+        /* 增加选择动画效果 */
+        .radio-card input[type="radio"] {
+            transform: scale(1.2);
+            margin-right: 12px;
+        }
+        
+        /* 提交按钮加载状态 */
+        .premium-button.loading {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+        
+        .premium-button.loading::after {
+            content: '';
+            width: 20px;
+            height: 20px;
+            border: 2px solid transparent;
+            border-top: 2px solid currentColor;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+            margin-left: 10px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* 增强结果文本的可读性 */
+        #resultText {
+            line-height: 1.8;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+        }
     </style>
 </head>
 <body class="bg-gray-50">
@@ -31,78 +329,120 @@
     </header>
 
     <!-- Hero Section -->
-    <section class="gradient-bg text-white py-20">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section class="hero-gradient text-white py-20 relative overflow-hidden">
+        <div class="absolute inset-0 bg-black opacity-5"></div>
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
             <div class="text-center mb-16">
-                <h1 class="text-4xl md:text-6xl font-bold mb-6">
+                <h1 class="text-4xl md:text-6xl font-bold mb-6 tracking-tight">
                     夸夸老婆话术生成器
                 </h1>
-                <p class="text-xl md:text-2xl opacity-90 mb-8">
+                <p class="text-xl md:text-2xl opacity-90 mb-8 font-medium">
                     融合紫微斗数、易经八卦、星座命理的智能话术系统
                 </p>
-                <p class="text-lg opacity-80">
+                <p class="text-lg opacity-80 max-w-2xl mx-auto">
                     中西方玄学结合，为每一位贤妻量身定制专属夸赞话术
                 </p>
             </div>
 
             <!-- Generator Form -->
-            <div class="max-w-2xl mx-auto bg-white rounded-2xl p-8 card-shadow">
+            <div class="max-w-2xl mx-auto glass-card rounded-3xl p-8 shadow-2xl">
                 <h2 class="text-2xl font-bold text-gray-900 text-center mb-8">开始生成专属话术</h2>
                 
-                <form id="generatorForm" class="space-y-6">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">老婆姓名</label>
+                <form id="generatorForm" class="space-y-8">
+                    <div class="space-y-2">
+                        <label class="block text-sm font-semibold text-gray-700 mb-3">老婆姓名</label>
                         <input type="text" id="wifeName" required 
-                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                               placeholder="请输入老婆的姓名">
+                               class="w-full px-6 py-4 premium-input rounded-xl text-lg"
+                               placeholder="请输入老婆的姓名"
+                               style="color: #111827 !important; -webkit-text-fill-color: #111827 !important;">
                     </div>
 
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">出生日期</label>
+                    <div class="space-y-2">
+                        <label class="block text-sm font-semibold text-gray-700 mb-3">出生日期</label>
                         <input type="date" id="birthDate" required 
-                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                               class="w-full px-6 py-4 premium-input rounded-xl text-lg"
+                               style="color: #111827 !important; -webkit-text-fill-color: #111827 !important;">
                     </div>
 
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-4">选择夸赞方面</label>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                            <label class="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-gray-50">
-                                <input type="radio" name="category" value="beauty" class="mr-3 text-blue-600">
-                                <span class="font-medium">颜值魅力</span>
+                    <div class="space-y-4">
+                        <label class="block text-sm font-semibold text-gray-700 mb-4">选择夸赞方面</label>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <label class="radio-card rounded-xl p-4 cursor-pointer relative z-10">
+                                <input type="radio" name="category" value="beauty" class="mr-3 text-indigo-600 focus:ring-indigo-500">
+                                <div class="flex items-center">
+                                    <span class="text-2xl mr-3">✨</span>
+                                    <div>
+                                        <div class="font-semibold text-gray-900">颜值魅力</div>
+                                        <div class="text-sm text-gray-600">外表美丽动人</div>
+                                    </div>
+                                </div>
                             </label>
-                            <label class="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-gray-50">
-                                <input type="radio" name="category" value="character" class="mr-3 text-blue-600">
-                                <span class="font-medium">性格品德</span>
+                            <label class="radio-card rounded-xl p-4 cursor-pointer relative z-10">
+                                <input type="radio" name="category" value="character" class="mr-3 text-indigo-600 focus:ring-indigo-500">
+                                <div class="flex items-center">
+                                    <span class="text-2xl mr-3">💎</span>
+                                    <div>
+                                        <div class="font-semibold text-gray-900">性格品德</div>
+                                        <div class="text-sm text-gray-600">内在品格优秀</div>
+                                    </div>
+                                </div>
                             </label>
-                            <label class="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-gray-50">
-                                <input type="radio" name="category" value="talent" class="mr-3 text-blue-600">
-                                <span class="font-medium">才华智慧</span>
+                            <label class="radio-card rounded-xl p-4 cursor-pointer relative z-10">
+                                <input type="radio" name="category" value="talent" class="mr-3 text-indigo-600 focus:ring-indigo-500">
+                                <div class="flex items-center">
+                                    <span class="text-2xl mr-3">🧠</span>
+                                    <div>
+                                        <div class="font-semibold text-gray-900">才华智慧</div>
+                                        <div class="text-sm text-gray-600">聪明才智过人</div>
+                                    </div>
+                                </div>
                             </label>
-                            <label class="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-gray-50">
-                                <input type="radio" name="category" value="gentle" class="mr-3 text-blue-600">
-                                <span class="font-medium">温柔体贴</span>
+                            <label class="radio-card rounded-xl p-4 cursor-pointer relative z-10">
+                                <input type="radio" name="category" value="gentle" class="mr-3 text-indigo-600 focus:ring-indigo-500">
+                                <div class="flex items-center">
+                                    <span class="text-2xl mr-3">💝</span>
+                                    <div>
+                                        <div class="font-semibold text-gray-900">温柔体贴</div>
+                                        <div class="text-sm text-gray-600">贴心温暖如春</div>
+                                    </div>
+                                </div>
                             </label>
-                            <label class="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-gray-50 md:col-span-2">
-                                <input type="radio" name="category" value="life" class="mr-3 text-blue-600">
-                                <span class="font-medium">生活能力</span>
+                            <label class="radio-card rounded-xl p-4 cursor-pointer relative z-10 md:col-span-2">
+                                <input type="radio" name="category" value="life" class="mr-3 text-indigo-600 focus:ring-indigo-500">
+                                <div class="flex items-center justify-center">
+                                    <span class="text-2xl mr-3">🏠</span>
+                                    <div>
+                                        <div class="font-semibold text-gray-900">生活能力</div>
+                                        <div class="text-sm text-gray-600">持家有道能干</div>
+                                    </div>
+                                </div>
                             </label>
                         </div>
                     </div>
 
                     <button type="submit" 
-                            class="w-full bg-blue-600 text-white py-4 px-6 rounded-lg hover:bg-blue-700 transform hover:scale-105 transition-all duration-200 font-medium text-lg">
-                        🎉 开始生成话术
+                            class="w-full premium-button py-5 px-8 rounded-xl text-lg font-semibold shadow-lg">
+                        <span class="relative z-10">🎉 开始生成话术</span>
                     </button>
                 </form>
 
                 <!-- Result Display -->
-                <div id="result" class="hidden mt-8 p-6 bg-gradient-to-r from-pink-50 to-purple-50 rounded-xl border border-pink-200">
-                    <h3 class="text-lg font-bold text-gray-900 mb-3">✨ 专属话术已生成</h3>
-                    <p id="resultText" class="text-gray-800 text-lg leading-relaxed"></p>
-                    <button onclick="copyToClipboard()" 
-                            class="mt-4 bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors">
-                        📋 复制话术
-                    </button>
+                <div id="result" class="hidden mt-8 result-card p-6 rounded-xl">
+                    <h3 class="text-xl font-bold text-amber-900 mb-4 flex items-center">
+                        <span class="text-2xl mr-2">✨</span>
+                        专属话术已生成
+                    </h3>
+                    <p id="resultText" class="text-amber-900 text-lg leading-relaxed font-medium bg-white bg-opacity-30 p-4 rounded-lg"></p>
+                    <div class="flex gap-3 mt-6">
+                        <button onclick="copyToClipboard()" 
+                                class="flex-1 bg-amber-600 text-white px-6 py-3 rounded-lg hover:bg-amber-700 transition-all duration-200 font-medium shadow-lg hover:shadow-xl transform hover:scale-105">
+                            📋 复制话术
+                        </button>
+                        <button onclick="generateNewCompliment()" 
+                                class="flex-1 bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-all duration-200 font-medium shadow-lg hover:shadow-xl transform hover:scale-105">
+                            🎲 再生成一条
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -117,28 +457,28 @@
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <div class="text-center p-6">
-                    <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <span class="text-2xl">🔮</span>
+                <div class="section-card text-center p-8 rounded-2xl shadow-lg">
+                    <div class="w-20 h-20 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
+                        <span class="text-3xl">🔮</span>
                     </div>
-                    <h3 class="text-xl font-bold text-gray-900 mb-3">东方玄学智慧</h3>
-                    <p class="text-gray-600">结合紫微斗数、易经八卦、五行相生等传统命理学，深度分析性格特质</p>
+                    <h3 class="text-xl font-bold text-gray-900 mb-4">东方玄学智慧</h3>
+                    <p class="text-gray-600 leading-relaxed">结合紫微斗数、易经八卦、五行相生等传统命理学，深度分析性格特质</p>
                 </div>
 
-                <div class="text-center p-6">
-                    <div class="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <span class="text-2xl">⭐</span>
+                <div class="section-card text-center p-8 rounded-2xl shadow-lg">
+                    <div class="w-20 h-20 bg-gradient-to-r from-purple-500 to-pink-600 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
+                        <span class="text-3xl">⭐</span>
                     </div>
-                    <h3 class="text-xl font-bold text-gray-900 mb-3">西方星座解析</h3>
-                    <p class="text-gray-600">融入十二星座、行星运行等西方占星学知识，全方位解读性格密码</p>
+                    <h3 class="text-xl font-bold text-gray-900 mb-4">西方星座解析</h3>
+                    <p class="text-gray-600 leading-relaxed">融入十二星座、行星运行等西方占星学知识，全方位解读性格密码</p>
                 </div>
 
-                <div class="text-center p-6">
-                    <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <span class="text-2xl">🤖</span>
+                <div class="section-card text-center p-8 rounded-2xl shadow-lg">
+                    <div class="w-20 h-20 bg-gradient-to-r from-green-500 to-teal-600 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
+                        <span class="text-3xl">🤖</span>
                     </div>
-                    <h3 class="text-xl font-bold text-gray-900 mb-3">AI智能生成</h3>
-                    <p class="text-gray-600">先进算法结合传统智慧，每次生成独一无二的个性化话术</p>
+                    <h3 class="text-xl font-bold text-gray-900 mb-4">AI智能生成</h3>
+                    <p class="text-gray-600 leading-relaxed">先进算法结合传统智慧，每次生成独一无二的个性化话术</p>
                 </div>
             </div>
         </div>
@@ -228,82 +568,82 @@
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <div class="bg-white rounded-xl p-8 shadow-lg">
+                <div class="pricing-card bg-white rounded-2xl p-8 shadow-xl border border-gray-200">
                     <h3 class="text-xl font-bold text-gray-900 mb-4">体验版</h3>
                     <div class="text-3xl font-bold text-gray-900 mb-2">¥9.9</div>
                     <p class="text-gray-600 mb-6">限时体验价</p>
                     <ul class="space-y-3 mb-8">
                         <li class="flex items-center text-gray-600">
-                            <span class="text-green-500 mr-2">✓</span>
+                            <span class="text-green-500 mr-3 text-lg">✓</span>
                             生成10条专属话术
                         </li>
                         <li class="flex items-center text-gray-600">
-                            <span class="text-green-500 mr-2">✓</span>
+                            <span class="text-green-500 mr-3 text-lg">✓</span>
                             基础命理分析
                         </li>
                         <li class="flex items-center text-gray-600">
-                            <span class="text-green-500 mr-2">✓</span>
+                            <span class="text-green-500 mr-3 text-lg">✓</span>
                             5大类别选择
                         </li>
                     </ul>
-                    <button class="w-full bg-gray-900 text-white py-3 rounded-lg hover:bg-gray-800 transition-colors">
+                    <button class="w-full bg-gray-900 text-white py-3 rounded-xl hover:bg-gray-800 transition-all duration-200 font-medium shadow-lg hover:shadow-xl transform hover:scale-105">
                         选择体验版
                     </button>
                 </div>
 
-                <div class="bg-blue-600 text-white rounded-xl p-8 shadow-lg transform scale-105">
-                    <div class="text-center mb-4">
-                        <span class="bg-yellow-400 text-blue-900 px-3 py-1 rounded-full text-sm font-bold">推荐</span>
+                <div class="pricing-card pricing-popular rounded-2xl p-8 shadow-2xl relative overflow-hidden">
+                    <div class="absolute top-4 right-4">
+                        <span class="bg-yellow-400 text-indigo-900 px-3 py-1 rounded-full text-sm font-bold">推荐</span>
                     </div>
                     <h3 class="text-xl font-bold mb-4">标准版</h3>
                     <div class="text-3xl font-bold mb-2">¥29.9</div>
                     <p class="opacity-90 mb-6">最受欢迎</p>
                     <ul class="space-y-3 mb-8">
                         <li class="flex items-center">
-                            <span class="text-yellow-400 mr-2">✓</span>
+                            <span class="text-yellow-400 mr-3 text-lg">✓</span>
                             生成50条专属话术
                         </li>
                         <li class="flex items-center">
-                            <span class="text-yellow-400 mr-2">✓</span>
+                            <span class="text-yellow-400 mr-3 text-lg">✓</span>
                             深度命理分析
                         </li>
                         <li class="flex items-center">
-                            <span class="text-yellow-400 mr-2">✓</span>
+                            <span class="text-yellow-400 mr-3 text-lg">✓</span>
                             星座运势解读
                         </li>
                         <li class="flex items-center">
-                            <span class="text-yellow-400 mr-2">✓</span>
+                            <span class="text-yellow-400 mr-3 text-lg">✓</span>
                             专属性格报告
                         </li>
                     </ul>
-                    <button class="w-full bg-white text-blue-600 py-3 rounded-lg hover:bg-gray-100 transition-colors font-bold">
+                    <button class="w-full bg-white text-indigo-600 py-3 rounded-xl hover:bg-gray-100 transition-all duration-200 font-bold shadow-lg hover:shadow-xl transform hover:scale-105">
                         选择标准版
                     </button>
                 </div>
 
-                <div class="bg-white rounded-xl p-8 shadow-lg">
+                <div class="pricing-card bg-white rounded-2xl p-8 shadow-xl border border-gray-200">
                     <h3 class="text-xl font-bold text-gray-900 mb-4">专业版</h3>
                     <div class="text-3xl font-bold text-gray-900 mb-2">¥99.9</div>
                     <p class="text-gray-600 mb-6">终身使用</p>
                     <ul class="space-y-3 mb-8">
                         <li class="flex items-center text-gray-600">
-                            <span class="text-green-500 mr-2">✓</span>
+                            <span class="text-green-500 mr-3 text-lg">✓</span>
                             无限次话术生成
                         </li>
                         <li class="flex items-center text-gray-600">
-                            <span class="text-green-500 mr-2">✓</span>
+                            <span class="text-green-500 mr-3 text-lg">✓</span>
                             专业命理师解读
                         </li>
                         <li class="flex items-center text-gray-600">
-                            <span class="text-green-500 mr-2">✓</span>
+                            <span class="text-green-500 mr-3 text-lg">✓</span>
                             私人定制服务
                         </li>
                         <li class="flex items-center text-gray-600">
-                            <span class="text-green-500 mr-2">✓</span>
+                            <span class="text-green-500 mr-3 text-lg">✓</span>
                             优先客服支持
                         </li>
                     </ul>
-                    <button class="w-full bg-gray-900 text-white py-3 rounded-lg hover:bg-gray-800 transition-colors">
+                    <button class="w-full bg-gray-900 text-white py-3 rounded-xl hover:bg-gray-800 transition-all duration-200 font-medium shadow-lg hover:shadow-xl transform hover:scale-105">
                         选择专业版
                     </button>
                 </div>
@@ -389,62 +729,58 @@
     </footer>
 
     <script>
-        // 夸赞话术数据库
+        // 优化后的夸赞话术数据库 - 纯中文，无重复错误
         const complimentDatabase = {
-            beauty: {
-                templates: [
-                    "{name}，你的美丽如{element}般{adjective}，{zodiac}座的魅力在你身上展现得淋漓尽致。",
-                    "今日见{name}，犹如{season}之{flower}，{zodiac}的典雅气质让人心动不已。",
-                    "{name}的容颜，承载着{element}的灵韵，{zodiac}赋予你独特的魅力光芒。"
-                ],
-                elements: ["春水", "秋月", "夏花", "冬雪", "晨露", "夕阳"],
-                adjectives: ["清澈", "温柔", "动人", "纯净", "迷人", "优雅"],
-                flowers: ["牡丹", "荷花", "梅花", "桃花", "兰花", "菊花"],
-                seasons: ["春日", "夏日", "秋日", "冬日"]
-            },
-            character: {
-                templates: [
-                    "{name}心如{virtue}，{zodiac}座的{trait}品质在你身上闪闪发光。",
-                    "与{name}相处，感受到{zodiac}特有的{virtue}，如{metaphor}般温暖人心。",
-                    "{name}的{trait}品格，体现了{zodiac}座最美好的一面，让人敬佩不已。"
-                ],
-                virtues: ["明月", "清泉", "暖阳", "春风", "甘露", "慧心"],
-                traits: ["善良", "真诚", "包容", "理解", "体贴", "宽容"],
-                metaphors: ["春日暖阳", "甘甜清泉", "温润玉石", "和煦春风"]
-            },
-            talent: {
-                templates: [
-                    "{name}的才华如{element}般{adjective}，{zodiac}座的智慧在你身上尽显。",
-                    "赞叹{name}的{skill}，{zodiac}赋予你过人的{ability}，令人钦佩。",
-                    "{name}的聪慧，恰似{metaphor}，{zodiac}座的才情在你身上展现无遗。"
-                ],
-                elements: ["璀璨星辰", "皎洁明月", "绚烂朝霞", "深邃夜空"],
-                adjectives: ["闪耀", "出众", "卓越", "不凡", "杰出", "优秀"],
-                skills: ["智慧", "才情", "见解", "能力", "天赋", "悟性"],
-                abilities: ["洞察力", "创造力", "理解力", "学习力", "思考力"],
-                metaphors: ["智慧明灯", "才华横溢", "聪慧如珠", "慧心如镜"]
-            },
-            gentle: {
-                templates: [
-                    "{name}的温柔如{element}，{zodiac}座的细腻让爱意更加深厚。",
-                    "感谢{name}的{care}，{zodiac}特有的{trait}让家充满温暖。",
-                    "{name}的体贴入微，犹如{metaphor}，{zodiac}的温柔是最珍贵的礼物。"
-                ],
-                elements: ["春风细雨", "温润如玉", "柔软月光", "和煦暖阳"],
-                care: ["关怀", "照顾", "呵护", "体贴", "陪伴", "理解"],
-                traits: ["温柔", "细心", "耐心", "贴心", "用心", "暖心"],
-                metaphors: ["温暖怀抱", "贴心棉袄", "温柔港湾", "甜蜜糖果"]
-            },
-            life: {
-                templates: [
-                    "{name}的生活智慧让家更美好，{zodiac}座的{skill}能力让人赞叹。",
-                    "欣赏{name}的{ability}，{zodiac}赋予你把生活过成诗的天赋。",
-                    "{name}将日常生活打理得井井有条，{zodiac}的{trait}让家充满幸福感。"
-                ],
-                skills: ["料理", "整理", "装饰", "规划", "管理", "创意"],
-                abilities: ["生活艺术", "居家智慧", "美学天赋", "组织能力"],
-                traits: ["细致", "用心", "巧思", "创意", "品味", "智慧"]
-            }
+            beauty: [
+                "亲爱的{name}，你的美丽如春水般清澈动人，{zodiac}的魅力在你身上展现得淋漓尽致。",
+                "今日见{name}，犹如春日牡丹，{zodiac}的典雅气质让人心动不已。",
+                "{name}的容颜承载着秋月的灵韵，{zodiac}赋予你独特的魅力光芒。",
+                "我的{name}，你如夏花般绚烂，{zodiac}的美丽让整个世界都为之倾倒。",
+                "{name}宝贝，你的笑容比晨露更纯净，{zodiac}的优雅深深印在我心里。",
+                "亲爱的{name}，你如夕阳般温柔迷人，{zodiac}的魅力无人能及。",
+                "{name}，你的美丽如冬雪般纯洁，{zodiac}的气质让人过目难忘。",
+                "我的{name}，你如兰花般清雅，{zodiac}的美丽是上天最好的恩赐。"
+            ],
+            character: [
+                "{name}心如明月般纯净，{zodiac}的善良品质在你身上闪闪发光。",
+                "与{name}相处，感受到{zodiac}特有的真诚，如春日暖阳般温暖人心。",
+                "{name}的包容品格，体现了{zodiac}最美好的一面，让人敬佩不已。",
+                "我的{name}，你的理解力如清泉般甘甜，{zodiac}的体贴让我感动。",
+                "{name}宝贝，你的宽容如春风般和煦，{zodiac}的品德令人钦佩。",
+                "亲爱的{name}，你如温润玉石般珍贵，{zodiac}的品格让人倾慕。",
+                "{name}，你的善良如甘露般滋润，{zodiac}的美德深深感动着我。",
+                "我的{name}，你的慧心如明镜般通透，{zodiac}的智慧让人赞叹。"
+            ],
+            talent: [
+                "{name}的才华如璀璨星辰般闪耀，{zodiac}的智慧在你身上尽显。",
+                "赞叹{name}的智慧，{zodiac}赋予你过人的洞察力，令人钦佩。",
+                "{name}的聪慧恰似皎洁明月，{zodiac}的才情在你身上展现无遗。",
+                "我的{name}，你的才情如绚烂朝霞般出众，{zodiac}的天赋让人惊艳。",
+                "{name}宝贝，你的见解如深邃夜空般卓越，{zodiac}的智慧无人能及。",
+                "亲爱的{name}，你的悟性如智慧明灯般杰出，{zodiac}的聪慧令人折服。",
+                "{name}，你的能力如才华横溢般优秀，{zodiac}的天赋是最珍贵的礼物。",
+                "我的{name}，你的创造力如慧心如镜般不凡，{zodiac}的智慧深深吸引着我。"
+            ],
+            gentle: [
+                "{name}的温柔如春风细雨般细腻，{zodiac}的体贴让爱意更加深厚。",
+                "感谢{name}的关怀，{zodiac}特有的温柔让家充满温暖。",
+                "{name}的体贴入微犹如温暖怀抱，{zodiac}的温柔是最珍贵的礼物。",
+                "我的{name}，你如温润如玉般柔软，{zodiac}的细心让我感到幸福。",
+                "{name}宝贝，你的照顾如柔软月光般贴心，{zodiac}的耐心让人感动。",
+                "亲爱的{name}，你的呵护如和煦暖阳般用心，{zodiac}的温柔如贴心棉袄。",
+                "{name}，你的陪伴如温柔港湾般暖心，{zodiac}的体贴是甜蜜糖果。",
+                "我的{name}，你的理解如春风般温暖，{zodiac}的温柔让我沉醉其中。"
+            ],
+            life: [
+                "{name}的生活智慧让家更美好，{zodiac}的料理能力让人赞叹。",
+                "欣赏{name}的生活艺术，{zodiac}赋予你把生活过成诗的天赋。",
+                "{name}将日常生活打理得井井有条，{zodiac}的细致让家充满幸福感。",
+                "我的{name}，你的整理能力如艺术般精致，{zodiac}的居家智慧令人佩服。",
+                "{name}宝贝，你的装饰天赋如美学般独特，{zodiac}的巧思让人惊喜。",
+                "亲爱的{name}，你的规划能力如组织般有序，{zodiac}的创意让生活多彩。",
+                "{name}，你的管理智慧如品味般高雅，{zodiac}的用心让家温馨无比。",
+                "我的{name}，你的生活创意如智慧般闪耀，{zodiac}的才能让人赞不绝口。"
+            ]
         };
 
         // 星座数据
@@ -482,27 +818,29 @@
             if ((month == 12 && day >= 22) || (month == 1 && day <= 19)) return "摩羯座";
         }
 
-        // 生成话术
+        // 优化后的话术生成函数 - 修复重复问题
         function generateCompliment(name, birthDate, category) {
             const date = new Date(birthDate);
             const zodiac = getZodiac(date);
-            const categoryData = complimentDatabase[category];
             
-            // 随机选择模板
-            const template = categoryData.templates[Math.floor(Math.random() * categoryData.templates.length)];
+            // 验证输入
+            if (!name || !zodiac || !complimentDatabase[category]) {
+                return "请输入完整信息";
+            }
             
-            // 替换占位符
+            // 获取对应类别的话术模板数组
+            const templates = complimentDatabase[category];
+            
+            // 随机选择一个模板
+            const randomIndex = Math.floor(Math.random() * templates.length);
+            const template = templates[randomIndex];
+            
+            // 替换占位符 - 只替换name和zodiac，避免重复
             let result = template.replace(/{name}/g, name);
             result = result.replace(/{zodiac}/g, zodiac);
             
-            // 根据类别替换其他占位符
-            Object.keys(categoryData).forEach(key => {
-                if (key !== 'templates' && Array.isArray(categoryData[key])) {
-                    const values = categoryData[key];
-                    const randomValue = values[Math.floor(Math.random() * values.length)];
-                    result = result.replace(new RegExp(`{${key}}`, 'g'), randomValue);
-                }
-            });
+            // 清理可能的多余空格和标点
+            result = result.replace(/\s+/g, ' ').trim();
             
             return result;
         }
@@ -511,30 +849,95 @@
         document.getElementById('generatorForm').addEventListener('submit', function(e) {
             e.preventDefault();
             
-            const name = document.getElementById('wifeName').value;
+            const name = document.getElementById('wifeName').value.trim();
             const birthDate = document.getElementById('birthDate').value;
             const category = document.querySelector('input[name="category"]:checked')?.value;
+            const submitBtn = this.querySelector('button[type="submit"]');
             
             if (!name || !birthDate || !category) {
                 alert('请填写完整信息');
                 return;
             }
             
-            const compliment = generateCompliment(name, birthDate, category);
+            // 显示加载状态
+            submitBtn.classList.add('loading');
+            submitBtn.innerHTML = '<span class="relative z-10">🎉 正在生成话术...</span>';
             
-            document.getElementById('resultText').textContent = compliment;
-            document.getElementById('result').classList.remove('hidden');
-            
-            // 滚动到结果区域
-            document.getElementById('result').scrollIntoView({ behavior: 'smooth' });
+            // 模拟加载时间，增加期待感
+            setTimeout(() => {
+                const compliment = generateCompliment(name, birthDate, category);
+                
+                // 数据追踪
+                if (typeof gtag !== 'undefined') {
+                    gtag('event', 'generate_compliment', {
+                        'category': category,
+                        'zodiac': getZodiac(new Date(birthDate))
+                    });
+                }
+                
+                document.getElementById('resultText').textContent = compliment;
+                document.getElementById('result').classList.remove('hidden');
+                
+                // 恢复按钮状态
+                submitBtn.classList.remove('loading');
+                submitBtn.innerHTML = '<span class="relative z-10">🎉 开始生成话术</span>';
+                
+                // 滚动到结果区域
+                document.getElementById('result').scrollIntoView({ behavior: 'smooth' });
+            }, 1500);
         });
 
         // 复制功能
         function copyToClipboard() {
             const text = document.getElementById('resultText').textContent;
+            const copyBtn = event.target;
+            
             navigator.clipboard.writeText(text).then(function() {
-                alert('话术已复制到剪贴板！');
+                // 更改按钮文字提供反馈
+                const originalText = copyBtn.innerHTML;
+                copyBtn.innerHTML = '✅ 已复制';
+                copyBtn.style.backgroundColor = '#10b981';
+                
+                setTimeout(() => {
+                    copyBtn.innerHTML = originalText;
+                    copyBtn.style.backgroundColor = '#d97706';
+                }, 2000);
+            }).catch(function(err) {
+                alert('复制失败，请手动选择文本复制');
             });
+        }
+
+        // 生成新话术功能
+        function generateNewCompliment() {
+            const name = document.getElementById('wifeName').value.trim();
+            const birthDate = document.getElementById('birthDate').value;
+            const category = document.querySelector('input[name="category"]:checked')?.value;
+            const regenBtn = event.target;
+            
+            if (!name || !birthDate || !category) {
+                alert('请先填写完整信息');
+                return;
+            }
+            
+            // 显示加载状态
+            const originalText = regenBtn.innerHTML;
+            regenBtn.innerHTML = '🔄 生成中...';
+            regenBtn.disabled = true;
+            
+            // 添加过渡效果
+            const resultText = document.getElementById('resultText');
+            resultText.style.transition = 'opacity 0.3s ease';
+            resultText.style.opacity = '0.3';
+            
+            setTimeout(() => {
+                const compliment = generateCompliment(name, birthDate, category);
+                document.getElementById('resultText').textContent = compliment;
+                
+                // 恢复显示
+                resultText.style.opacity = '1';
+                regenBtn.innerHTML = originalText;
+                regenBtn.disabled = false;
+            }, 800);
         }
 
         // 平滑滚动
@@ -547,6 +950,25 @@
                 }
             });
         });
+
+        // 开发测试函数 - 验证话术生成质量
+        function testCompliments() {
+            const testData = [
+                { name: "小美", birthDate: "1990-05-15", category: "beauty" },
+                { name: "小丽", birthDate: "1985-09-22", category: "character" },
+                { name: "小芳", birthDate: "1992-12-10", category: "talent" },
+                { name: "小慧", birthDate: "1988-03-08", category: "gentle" },
+                { name: "小雅", birthDate: "1993-07-20", category: "life" }
+            ];
+            
+            console.log("=== 话术生成测试 ===");
+            testData.forEach(test => {
+                const result = generateCompliment(test.name, test.birthDate, test.category);
+                console.log(`${test.category}: ${result}`);
+            });
+        }
+
+        // 在开发环境下可以调用 testCompliments() 进行测试
     </script>
 </body>
 </html>
