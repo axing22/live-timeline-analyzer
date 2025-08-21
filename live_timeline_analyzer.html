@@ -363,15 +363,41 @@
 
         .tooltip {
             position: absolute;
-            background: rgba(0,0,0,0.8);
+            background: rgba(0,0,0,0.9);
             color: white;
-            padding: 8px 12px;
-            border-radius: 5px;
-            font-size: 12px;
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-size: 13px;
             pointer-events: none;
             z-index: 1000;
             opacity: 0;
             transition: opacity 0.3s ease;
+            max-width: 400px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .tooltip-header {
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 8px;
+            padding-bottom: 6px;
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .tooltip-message {
+            margin-bottom: 6px;
+            line-height: 1.4;
+        }
+
+        .tooltip-user {
+            color: #4ecdc4;
+            font-weight: 500;
+        }
+
+        .tooltip-content {
+            color: #f0f0f0;
+            word-wrap: break-word;
         }
 
         .pulse {
@@ -585,12 +611,12 @@
             document.getElementById('zoomIn').addEventListener('click', () => zoomTimeline(1.2));
             document.getElementById('zoomOut').addEventListener('click', () => zoomTimeline(0.8));
 
-            // 时间轴拖拽事件
+            // 时间轴拖拽和悬停事件
             const mainTimeline = document.getElementById('mainTimeline');
             mainTimeline.addEventListener('mousedown', startDrag);
-            mainTimeline.addEventListener('mousemove', drag);
+            mainTimeline.addEventListener('mousemove', handleTimelineMouseMove);
             mainTimeline.addEventListener('mouseup', endDrag);
-            mainTimeline.addEventListener('mouseleave', endDrag);
+            mainTimeline.addEventListener('mouseleave', handleTimelineMouseLeave);
 
             // 图表标签切换
             document.querySelectorAll('.chart-tab').forEach(tab => {
@@ -819,6 +845,14 @@
             const timelineHeight = canvas.height - padding * 2;
             const slotWidth = timelineWidth / timelineData.length;
 
+            // 存储时间轴区域信息用于鼠标交互
+            canvas.timelineInfo = {
+                padding: padding,
+                slotWidth: slotWidth,
+                timelineHeight: timelineHeight,
+                timelineData: timelineData
+            };
+
             // 绘制时间轴背景
             ctx.fillStyle = '#f8f9fa';
             ctx.fillRect(padding, padding, canvas.width - padding * 2, timelineHeight);
@@ -936,7 +970,7 @@
 
             if (timelineData.length === 0) return;
 
-            const padding = 40;
+            const padding = 60;
             const chartWidth = canvas.width - padding * 2;
             const chartHeight = canvas.height - padding * 2;
             const barWidth = chartWidth / timelineData.length;
@@ -985,6 +1019,26 @@
                 const y = padding + (chartHeight / 5) * i + 5;
                 ctx.fillText(value, padding - 10, y);
             }
+
+            // X轴时间标签
+            ctx.fillStyle = '#666';
+            ctx.font = '10px Arial';
+            ctx.textAlign = 'center';
+            const labelInterval = Math.max(1, Math.floor(timelineData.length / 10));
+            timelineData.forEach((slot, index) => {
+                if (index % labelInterval === 0) {
+                    const x = padding + index * barWidth + barWidth/2;
+                    const timeStr = slot.time.toLocaleTimeString('zh-CN', {
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    });
+                    ctx.save();
+                    ctx.translate(x, canvas.height - 15);
+                    ctx.rotate(-Math.PI / 6);
+                    ctx.fillText(timeStr, 0, 0);
+                    ctx.restore();
+                }
+            });
         }
 
         function generateWordcloud() {
@@ -1207,8 +1261,15 @@
             e.target.style.cursor = 'grabbing';
         }
 
+        function handleTimelineMouseMove(e) {
+            if (isDragging) {
+                drag(e);
+            } else {
+                handleTimelineHover(e);
+            }
+        }
+
         function drag(e) {
-            if (!isDragging) return;
             e.preventDefault();
             
             const deltaX = e.clientX - dragStartX;
@@ -1219,6 +1280,44 @@
             timelineOffset = Math.max(0, Math.min(maxOffset, timelineOffset));
             
             drawTimeline();
+        }
+
+        function handleTimelineHover(e) {
+            const canvas = document.getElementById('mainCanvas');
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+
+            if (!canvas.timelineInfo) return;
+
+            const { padding, slotWidth, timelineHeight, timelineData } = canvas.timelineInfo;
+            
+            // 检查是否在时间轴区域内
+            if (y < padding || y > padding + timelineHeight) {
+                hideTooltip();
+                return;
+            }
+
+            // 计算对应的时间槽
+            const adjustedX = x + timelineOffset - padding;
+            const slotIndex = Math.floor(adjustedX / slotWidth);
+
+            if (slotIndex >= 0 && slotIndex < timelineData.length) {
+                const slot = timelineData[slotIndex];
+                if (slot.count > 0) {
+                    showTimelineTooltip(e, slot);
+                } else {
+                    hideTooltip();
+                }
+            } else {
+                hideTooltip();
+            }
+        }
+
+        function handleTimelineMouseLeave() {
+            if (!isDragging) {
+                hideTooltip();
+            }
         }
 
         function endDrag(e) {
@@ -1243,6 +1342,53 @@
                 trendChart.style.display = 'none';
                 wordcloudContainer.classList.remove('hidden');
             }
+        }
+
+        function showTimelineTooltip(e, slot) {
+            const tooltip = document.getElementById('tooltip');
+            
+            const timeStr = slot.time.toLocaleTimeString('zh-CN', {
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            });
+
+            let tooltipContent = `<div class="tooltip-header">${timeStr} (${slot.count}条消息)</div>`;
+            
+            slot.messages.forEach((msg, index) => {
+                if (index < 5) { // 最多显示5条消息
+                    const content = msg.content.length > 50 ? msg.content.substring(0, 50) + '...' : msg.content;
+                    tooltipContent += `<div class="tooltip-message"><span class="tooltip-user">${msg.username}:</span> <span class="tooltip-content">${content}</span></div>`;
+                }
+            });
+
+            if (slot.messages.length > 5) {
+                tooltipContent += `<div class="tooltip-message" style="color: #999; font-style: italic;">...还有${slot.messages.length - 5}条消息</div>`;
+            }
+            
+            tooltip.innerHTML = tooltipContent;
+            
+            // 计算tooltip位置，避免超出屏幕
+            const tooltipRect = tooltip.getBoundingClientRect();
+            const windowWidth = window.innerWidth;
+            const windowHeight = window.innerHeight;
+            
+            let left = e.pageX + 15;
+            let top = e.pageY - 10;
+            
+            // 防止tooltip超出右边界
+            if (left + 400 > windowWidth) {
+                left = e.pageX - 415;
+            }
+            
+            // 防止tooltip超出下边界
+            if (top + 200 > windowHeight) {
+                top = e.pageY - 210;
+            }
+            
+            tooltip.style.left = left + 'px';
+            tooltip.style.top = top + 'px';
+            tooltip.style.opacity = '1';
         }
 
         function showTooltip(e, text) {
