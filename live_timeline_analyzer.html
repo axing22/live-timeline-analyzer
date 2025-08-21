@@ -1,0 +1,1284 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>直播公屏时间轴分析系统</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            color: #333;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 1.1em;
+        }
+
+        .upload-section {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .upload-area {
+            border: 2px dashed #667eea;
+            border-radius: 10px;
+            padding: 40px;
+            text-align: center;
+            background: linear-gradient(135deg, rgba(102,126,234,0.05) 0%, rgba(118,75,162,0.05) 100%);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .upload-area:hover {
+            border-color: #764ba2;
+            background: linear-gradient(135deg, rgba(102,126,234,0.1) 0%, rgba(118,75,162,0.1) 100%);
+        }
+
+        .upload-area.dragover {
+            border-color: #764ba2;
+            background: linear-gradient(135deg, rgba(102,126,234,0.15) 0%, rgba(118,75,162,0.15) 100%);
+        }
+
+        .upload-icon {
+            font-size: 3em;
+            margin-bottom: 15px;
+            color: #667eea;
+        }
+
+        .upload-text {
+            font-size: 1.2em;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .upload-hint {
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            text-align: center;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            transition: transform 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-value {
+            font-size: 2.5em;
+            font-weight: bold;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 1em;
+            font-weight: 500;
+        }
+
+        .controls-section {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+        }
+
+        .controls-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .control-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .control-group label {
+            color: #333;
+            font-weight: 500;
+        }
+
+        .control-group select,
+        .control-group input {
+            padding: 8px 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s ease;
+        }
+
+        .control-group select:focus,
+        .control-group input:focus {
+            border-color: #667eea;
+            outline: none;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102,126,234,0.3);
+        }
+
+        .btn-secondary {
+            background: #f8f9fa;
+            color: #333;
+            border: 2px solid #e0e0e0;
+        }
+
+        .btn-secondary:hover {
+            background: #e9ecef;
+        }
+
+        .timeline-section {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+        }
+
+        .timeline-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .timeline-title {
+            color: #333;
+            font-size: 1.5em;
+            font-weight: bold;
+        }
+
+        .zoom-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .zoom-btn {
+            width: 30px;
+            height: 30px;
+            border: none;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+
+        .zoom-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .zoom-level {
+            color: #666;
+            font-size: 14px;
+            min-width: 50px;
+            text-align: center;
+        }
+
+        .timeline-container {
+            position: relative;
+            height: 120px;
+            border: 1px solid #e0e0e0;
+            border-radius: 10px;
+            overflow: hidden;
+            background: #fafafa;
+            cursor: grab;
+        }
+
+        .timeline-container:active {
+            cursor: grabbing;
+        }
+
+        .timeline-canvas {
+            width: 100%;
+            height: 100%;
+        }
+
+        .assistant-timeline {
+            margin-top: 15px;
+        }
+
+        .assistant-timeline .timeline-title {
+            color: #ff8c00;
+        }
+
+        .analysis-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .chart-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+        }
+
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .chart-title {
+            color: #333;
+            font-size: 1.3em;
+            font-weight: bold;
+        }
+
+        .chart-tabs {
+            display: flex;
+            gap: 5px;
+        }
+
+        .chart-tab {
+            padding: 5px 15px;
+            border: none;
+            border-radius: 20px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: #f8f9fa;
+            color: #666;
+        }
+
+        .chart-tab.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .chart-container {
+            height: 300px;
+            position: relative;
+        }
+
+        .chart-canvas {
+            width: 100%;
+            height: 100%;
+        }
+
+        .wordcloud-container {
+            height: 300px;
+            position: relative;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            padding: 20px;
+            overflow: hidden;
+        }
+
+        .word-item {
+            display: inline-block;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            user-select: none;
+        }
+
+        .word-item:hover {
+            transform: scale(1.1);
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .tooltip {
+            position: absolute;
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 5px;
+            font-size: 12px;
+            pointer-events: none;
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .pulse {
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+            .analysis-section {
+                grid-template-columns: 1fr;
+            }
+            
+            .controls-row {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .control-group {
+                justify-content: space-between;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>直播公屏时间轴分析系统</h1>
+            <p>通过可视化时间轴和数据分析图表，帮助团队分析直播公屏互动情况</p>
+        </div>
+
+        <div class="upload-section">
+            <div class="upload-area" id="uploadArea">
+                <div class="upload-icon">📊</div>
+                <div class="upload-text">点击或拖拽CSV文件到此处</div>
+                <div class="upload-hint">支持CSV格式文件，包含时间、用户信息和发言内容</div>
+                <input type="file" class="file-input" id="fileInput" accept=".csv">
+            </div>
+        </div>
+
+        <div class="stats-grid hidden" id="statsGrid">
+            <div class="stat-card">
+                <div class="stat-value" id="totalMessages">0</div>
+                <div class="stat-label">有效消息数</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="activeUsers">0</div>
+                <div class="stat-label">活跃用户数</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="assistantMessages">0</div>
+                <div class="stat-label">助教互动次数</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="shareMessages">0</div>
+                <div class="stat-label">分享次数</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="peakTime">--:--</div>
+                <div class="stat-label">互动高峰时段</div>
+            </div>
+        </div>
+
+        <div class="controls-section hidden" id="controlsSection">
+            <div class="controls-row">
+                <div class="control-group">
+                    <label for="timeGranularity">时间粒度:</label>
+                    <select id="timeGranularity">
+                        <option value="30">30秒</option>
+                        <option value="60" selected>1分钟</option>
+                        <option value="120">2分钟</option>
+                        <option value="300">5分钟</option>
+                    </select>
+                </div>
+                <div class="control-group">
+                    <label for="userSearch">搜索用户:</label>
+                    <input type="text" id="userSearch" placeholder="输入用户昵称">
+                </div>
+                <button class="btn btn-secondary" id="resetView">重置视图</button>
+                <button class="btn btn-primary" id="exportData">导出分析报告</button>
+            </div>
+        </div>
+
+        <div class="timeline-section hidden" id="timelineSection">
+            <div class="timeline-header">
+                <h3 class="timeline-title">主时间轴 - 用户互动</h3>
+                <div class="zoom-controls">
+                    <button class="zoom-btn" id="zoomOut">-</button>
+                    <span class="zoom-level" id="zoomLevel">100%</span>
+                    <button class="zoom-btn" id="zoomIn">+</button>
+                </div>
+            </div>
+            <div class="timeline-container" id="mainTimeline">
+                <canvas class="timeline-canvas" id="mainCanvas"></canvas>
+            </div>
+            
+            <div class="assistant-timeline hidden" id="assistantTimelineSection">
+                <div class="timeline-header">
+                    <h3 class="timeline-title">助教时间轴</h3>
+                </div>
+                <div class="timeline-container" id="assistantTimeline">
+                    <canvas class="timeline-canvas" id="assistantCanvas"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="analysis-section hidden" id="analysisSection">
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h3 class="chart-title">数据分析</h3>
+                    <div class="chart-tabs">
+                        <button class="chart-tab active" data-tab="trend">趋势图</button>
+                        <button class="chart-tab" data-tab="wordcloud">词云</button>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <canvas class="chart-canvas" id="trendChart"></canvas>
+                    <div class="wordcloud-container hidden" id="wordcloudContainer"></div>
+                </div>
+            </div>
+
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h3 class="chart-title">详细统计</h3>
+                </div>
+                <div class="chart-container">
+                    <canvas class="chart-canvas" id="detailChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="tooltip" id="tooltip"></div>
+
+    <script>
+        // 全局变量
+        let rawData = [];
+        let filteredData = [];
+        let assistantData = [];
+        let shareData = [];
+        let timelineData = [];
+        let currentZoom = 1;
+        let timelineOffset = 0;
+        let currentGranularity = 60;
+        let isDragging = false;
+        let dragStartX = 0;
+        let dragStartOffset = 0;
+
+        // DOM 元素
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const statsGrid = document.getElementById('statsGrid');
+        const controlsSection = document.getElementById('controlsSection');
+        const timelineSection = document.getElementById('timelineSection');
+        const analysisSection = document.getElementById('analysisSection');
+        const assistantTimelineSection = document.getElementById('assistantTimelineSection');
+
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeEventListeners();
+        });
+
+        function initializeEventListeners() {
+            // 文件上传事件
+            uploadArea.addEventListener('click', () => fileInput.click());
+            uploadArea.addEventListener('dragover', handleDragOver);
+            uploadArea.addEventListener('dragleave', handleDragLeave);
+            uploadArea.addEventListener('drop', handleDrop);
+            fileInput.addEventListener('change', handleFileSelect);
+
+            // 控制面板事件
+            document.getElementById('timeGranularity').addEventListener('change', handleGranularityChange);
+            document.getElementById('userSearch').addEventListener('input', handleUserSearch);
+            document.getElementById('resetView').addEventListener('click', resetView);
+            document.getElementById('exportData').addEventListener('click', exportData);
+
+            // 时间轴缩放事件
+            document.getElementById('zoomIn').addEventListener('click', () => zoomTimeline(1.2));
+            document.getElementById('zoomOut').addEventListener('click', () => zoomTimeline(0.8));
+
+            // 时间轴拖拽事件
+            const mainTimeline = document.getElementById('mainTimeline');
+            mainTimeline.addEventListener('mousedown', startDrag);
+            mainTimeline.addEventListener('mousemove', drag);
+            mainTimeline.addEventListener('mouseup', endDrag);
+            mainTimeline.addEventListener('mouseleave', endDrag);
+
+            // 图表标签切换
+            document.querySelectorAll('.chart-tab').forEach(tab => {
+                tab.addEventListener('click', switchChartTab);
+            });
+        }
+
+        // 文件处理函数
+        function handleDragOver(e) {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        }
+
+        function handleDragLeave(e) {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+        }
+
+        function handleDrop(e) {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                processFile(files[0]);
+            }
+        }
+
+        function handleFileSelect(e) {
+            const file = e.target.files[0];
+            if (file) {
+                processFile(file);
+            }
+        }
+
+        function processFile(file) {
+            if (!file.name.toLowerCase().endsWith('.csv')) {
+                alert('请上传CSV文件');
+                return;
+            }
+
+            showLoading();
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const csvContent = e.target.result;
+                    parseCSVData(csvContent);
+                    hideLoading();
+                    showAnalysis();
+                } catch (error) {
+                    console.error('文件处理错误:', error);
+                    alert('文件处理失败，请检查文件格式');
+                    hideLoading();
+                }
+            };
+            reader.readAsText(file, 'UTF-8');
+        }
+
+        function parseCSVData(csvContent) {
+            const lines = csvContent.split('\n');
+            let dataStartIndex = -1;
+            
+            // 查找数据起始位置
+            for (let i = 0; i < lines.length; i++) {
+                if (lines[i].includes('时间') && lines[i].includes('用户ID')) {
+                    dataStartIndex = i;
+                    break;
+                }
+            }
+
+            if (dataStartIndex === -1) {
+                throw new Error('未找到数据起始位置');
+            }
+
+            // 解析数据
+            rawData = [];
+            const headers = lines[dataStartIndex].split(',');
+            
+            for (let i = dataStartIndex + 1; i < lines.length; i++) {
+                const line = lines[i].trim();
+                if (line === '') continue;
+                
+                const values = parseCSVLine(line);
+                if (values.length >= 6) {
+                    const messageData = {
+                        time: values[0],
+                        userId: values[1],
+                        username: values[2],
+                        platform: values[3],
+                        content: values[4],
+                        isRobot: values[5] === '1'
+                    };
+                    
+                    // 只保留真人数据（isRobot=1）
+                    if (messageData.isRobot) {
+                        rawData.push(messageData);
+                    }
+                }
+            }
+
+            // 数据分类
+            classifyData();
+            
+            // 生成时间轴数据
+            generateTimelineData();
+        }
+
+        function parseCSVLine(line) {
+            const values = [];
+            let current = '';
+            let inQuotes = false;
+            
+            for (let i = 0; i < line.length; i++) {
+                const char = line[i];
+                if (char === '"') {
+                    inQuotes = !inQuotes;
+                } else if (char === ',' && !inQuotes) {
+                    values.push(current.trim());
+                    current = '';
+                } else {
+                    current += char;
+                }
+            }
+            
+            values.push(current.trim());
+            return values;
+        }
+
+        function classifyData() {
+            filteredData = [];
+            assistantData = [];
+            shareData = [];
+
+            rawData.forEach(message => {
+                if (message.content === '刚刚分享了直播间') {
+                    shareData.push(message);
+                } else if (message.username.includes('助教')) {
+                    assistantData.push(message);
+                } else if (message.content.trim() !== '') {
+                    filteredData.push(message);
+                }
+            });
+        }
+
+        function generateTimelineData() {
+            if (filteredData.length === 0) return;
+
+            // 时间范围
+            const times = filteredData.map(msg => new Date(msg.time.replace(/-/g, '/')));
+            const startTime = new Date(Math.min(...times));
+            const endTime = new Date(Math.max(...times));
+
+            // 按时间粒度聚合数据
+            timelineData = [];
+            const granularity = currentGranularity * 1000; // 转换为毫秒
+            
+            for (let time = startTime.getTime(); time <= endTime.getTime(); time += granularity) {
+                const slotStart = new Date(time);
+                const slotEnd = new Date(time + granularity);
+                
+                const messagesInSlot = filteredData.filter(msg => {
+                    const msgTime = new Date(msg.time.replace(/-/g, '/'));
+                    return msgTime >= slotStart && msgTime < slotEnd;
+                });
+
+                timelineData.push({
+                    time: slotStart,
+                    count: messagesInSlot.length,
+                    messages: messagesInSlot,
+                    isPeak: messagesInSlot.length > 5
+                });
+            }
+        }
+
+        function showAnalysis() {
+            updateStats();
+            statsGrid.classList.remove('hidden');
+            controlsSection.classList.remove('hidden');
+            timelineSection.classList.remove('hidden');
+            analysisSection.classList.remove('hidden');
+
+            if (assistantData.length > 0) {
+                assistantTimelineSection.classList.remove('hidden');
+            }
+
+            drawTimeline();
+            drawTrendChart();
+            generateWordcloud();
+            drawDetailChart();
+        }
+
+        function updateStats() {
+            document.getElementById('totalMessages').textContent = filteredData.length;
+            document.getElementById('activeUsers').textContent = new Set(filteredData.map(msg => msg.userId)).size;
+            document.getElementById('assistantMessages').textContent = assistantData.length;
+            document.getElementById('shareMessages').textContent = shareData.length;
+
+            // 计算互动高峰时段
+            const peakSlot = timelineData.reduce((max, slot) => 
+                slot.count > max.count ? slot : max, {count: 0, time: null});
+            
+            if (peakSlot.time) {
+                const peakTimeStr = peakSlot.time.toLocaleTimeString('zh-CN', {
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+                document.getElementById('peakTime').textContent = peakTimeStr;
+            }
+        }
+
+        function drawTimeline() {
+            const canvas = document.getElementById('mainCanvas');
+            const ctx = canvas.getContext('2d');
+            const container = canvas.parentElement;
+            
+            canvas.width = container.offsetWidth;
+            canvas.height = container.offsetHeight;
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            if (timelineData.length === 0) return;
+
+            // 计算绘制参数
+            const padding = 40;
+            const timelineWidth = (canvas.width - padding * 2) * currentZoom;
+            const timelineHeight = canvas.height - padding * 2;
+            const slotWidth = timelineWidth / timelineData.length;
+
+            // 绘制时间轴背景
+            ctx.fillStyle = '#f8f9fa';
+            ctx.fillRect(padding, padding, canvas.width - padding * 2, timelineHeight);
+
+            // 绘制时间轴
+            timelineData.forEach((slot, index) => {
+                const x = padding + (index * slotWidth) - timelineOffset;
+                
+                if (x < -slotWidth || x > canvas.width) return;
+
+                // 绘制时间点
+                if (slot.count > 0) {
+                    const height = Math.max(5, (slot.count / Math.max(...timelineData.map(s => s.count))) * timelineHeight * 0.8);
+                    
+                    // 颜色基于消息数量
+                    const intensity = slot.count / Math.max(...timelineData.map(s => s.count));
+                    ctx.fillStyle = slot.isPeak ? 
+                        `rgba(255, 99, 132, ${0.3 + intensity * 0.7})` :
+                        `rgba(102, 126, 234, ${0.3 + intensity * 0.7})`;
+                    
+                    ctx.fillRect(x, padding + timelineHeight - height, Math.max(2, slotWidth - 1), height);
+
+                    // 高峰时段脉冲效果
+                    if (slot.isPeak) {
+                        ctx.strokeStyle = '#ff6384';
+                        ctx.lineWidth = 2;
+                        ctx.strokeRect(x, padding + timelineHeight - height, Math.max(2, slotWidth - 1), height);
+                    }
+                }
+
+                // 绘制时间标签
+                if (index % Math.ceil(10 / currentZoom) === 0) {
+                    ctx.fillStyle = '#666';
+                    ctx.font = '12px Arial';
+                    ctx.textAlign = 'center';
+                    const timeStr = slot.time.toLocaleTimeString('zh-CN', {
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    });
+                    ctx.fillText(timeStr, x + slotWidth/2, canvas.height - 10);
+                }
+            });
+
+            // 绘制助教时间轴
+            if (assistantData.length > 0) {
+                drawAssistantTimeline();
+            }
+        }
+
+        function drawAssistantTimeline() {
+            const canvas = document.getElementById('assistantCanvas');
+            const ctx = canvas.getContext('2d');
+            const container = canvas.parentElement;
+            
+            canvas.width = container.offsetWidth;
+            canvas.height = container.offsetHeight;
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // 生成助教时间轴数据
+            const assistantTimelineData = [];
+            if (timelineData.length > 0) {
+                const granularity = currentGranularity * 1000;
+                const startTime = timelineData[0].time.getTime();
+                const endTime = timelineData[timelineData.length - 1].time.getTime();
+
+                for (let time = startTime; time <= endTime; time += granularity) {
+                    const slotStart = new Date(time);
+                    const slotEnd = new Date(time + granularity);
+                    
+                    const assistantMessages = assistantData.filter(msg => {
+                        const msgTime = new Date(msg.time.replace(/-/g, '/'));
+                        return msgTime >= slotStart && msgTime < slotEnd;
+                    });
+
+                    assistantTimelineData.push({
+                        time: slotStart,
+                        count: assistantMessages.length,
+                        messages: assistantMessages
+                    });
+                }
+            }
+
+            // 绘制助教时间轴
+            const padding = 40;
+            const timelineWidth = (canvas.width - padding * 2) * currentZoom;
+            const timelineHeight = canvas.height - padding * 2;
+            const slotWidth = timelineWidth / assistantTimelineData.length;
+
+            ctx.fillStyle = '#fff7e6';
+            ctx.fillRect(padding, padding, canvas.width - padding * 2, timelineHeight);
+
+            assistantTimelineData.forEach((slot, index) => {
+                const x = padding + (index * slotWidth) - timelineOffset;
+                
+                if (x < -slotWidth || x > canvas.width) return;
+
+                if (slot.count > 0) {
+                    const height = Math.max(5, (slot.count / Math.max(...assistantTimelineData.map(s => s.count))) * timelineHeight * 0.8);
+                    
+                    ctx.fillStyle = `rgba(255, 140, 0, 0.7)`;
+                    ctx.fillRect(x, padding + timelineHeight - height, Math.max(2, slotWidth - 1), height);
+                }
+            });
+        }
+
+        function drawTrendChart() {
+            const canvas = document.getElementById('trendChart');
+            const ctx = canvas.getContext('2d');
+            
+            canvas.width = canvas.offsetWidth;
+            canvas.height = canvas.offsetHeight;
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            if (timelineData.length === 0) return;
+
+            const padding = 40;
+            const chartWidth = canvas.width - padding * 2;
+            const chartHeight = canvas.height - padding * 2;
+            const barWidth = chartWidth / timelineData.length;
+            const maxCount = Math.max(...timelineData.map(slot => slot.count));
+
+            // 绘制网格线
+            ctx.strokeStyle = '#e0e0e0';
+            ctx.lineWidth = 1;
+            for (let i = 0; i <= 5; i++) {
+                const y = padding + (chartHeight / 5) * i;
+                ctx.beginPath();
+                ctx.moveTo(padding, y);
+                ctx.lineTo(canvas.width - padding, y);
+                ctx.stroke();
+            }
+
+            // 绘制柱状图
+            timelineData.forEach((slot, index) => {
+                const x = padding + index * barWidth;
+                const height = (slot.count / maxCount) * chartHeight;
+                const y = canvas.height - padding - height;
+
+                // 渐变填充
+                const gradient = ctx.createLinearGradient(0, y, 0, y + height);
+                gradient.addColorStop(0, '#667eea');
+                gradient.addColorStop(1, '#764ba2');
+
+                ctx.fillStyle = gradient;
+                ctx.fillRect(x, y, Math.max(1, barWidth - 2), height);
+
+                // 数值标签
+                if (slot.count > 0 && barWidth > 20) {
+                    ctx.fillStyle = '#333';
+                    ctx.font = '10px Arial';
+                    ctx.textAlign = 'center';
+                    ctx.fillText(slot.count, x + barWidth/2, y - 5);
+                }
+            });
+
+            // Y轴标签
+            ctx.fillStyle = '#666';
+            ctx.font = '12px Arial';
+            ctx.textAlign = 'right';
+            for (let i = 0; i <= 5; i++) {
+                const value = Math.round((maxCount / 5) * (5 - i));
+                const y = padding + (chartHeight / 5) * i + 5;
+                ctx.fillText(value, padding - 10, y);
+            }
+        }
+
+        function generateWordcloud() {
+            const container = document.getElementById('wordcloudContainer');
+            container.innerHTML = '';
+
+            if (filteredData.length === 0) return;
+
+            // 提取词汇
+            const wordMap = new Map();
+            const excludeWords = new Set(['的', '了', '是', '我', '你', '他', '她', '它', '在', '有', '和', '对', '不', '也', '就', '都', '会', '能', '要', '可以', '这个', '那个', '什么', '怎么', '为什么']);
+
+            filteredData.forEach(msg => {
+                const content = msg.content.toLowerCase();
+                
+                // 中文词汇（2个字以上）
+                const chineseWords = content.match(/[\u4e00-\u9fa5]{2,}/g);
+                if (chineseWords) {
+                    chineseWords.forEach(word => {
+                        if (!excludeWords.has(word)) {
+                            wordMap.set(word, (wordMap.get(word) || 0) + 1);
+                        }
+                    });
+                }
+
+                // 英文单词
+                const englishWords = content.match(/[a-z]+/g);
+                if (englishWords) {
+                    englishWords.forEach(word => {
+                        if (word.length > 2) {
+                            wordMap.set(word, (wordMap.get(word) || 0) + 1);
+                        }
+                    });
+                }
+
+                // 表情符号
+                const emojis = content.match(/[\u{1f300}-\u{1f9ff}]/gu);
+                if (emojis) {
+                    emojis.forEach(emoji => {
+                        wordMap.set(emoji, (wordMap.get(emoji) || 0) + 1);
+                    });
+                }
+            });
+
+            // 按频率排序并取前50个
+            const sortedWords = Array.from(wordMap.entries())
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 50);
+
+            if (sortedWords.length === 0) return;
+
+            const maxCount = sortedWords[0][1];
+
+            // 生成词云
+            sortedWords.forEach(([word, count]) => {
+                const wordElement = document.createElement('span');
+                wordElement.className = 'word-item';
+                wordElement.textContent = word;
+                wordElement.title = `出现 ${count} 次`;
+
+                // 根据频率设置字体大小
+                const sizeLevel = Math.ceil((count / maxCount) * 5);
+                const fontSize = 12 + sizeLevel * 4;
+                wordElement.style.fontSize = fontSize + 'px';
+
+                // 随机颜色
+                const colors = ['#667eea', '#764ba2', '#ff6b6b', '#4ecdc4', '#45b7d1', '#96ceb4', '#feca57', '#ff9ff3'];
+                wordElement.style.color = colors[Math.floor(Math.random() * colors.length)];
+
+                // 悬停效果
+                wordElement.addEventListener('mouseenter', function(e) {
+                    showTooltip(e, `"${word}" 出现 ${count} 次`);
+                });
+
+                wordElement.addEventListener('mouseleave', hideTooltip);
+
+                container.appendChild(wordElement);
+            });
+        }
+
+        function drawDetailChart() {
+            const canvas = document.getElementById('detailChart');
+            const ctx = canvas.getContext('2d');
+            
+            canvas.width = canvas.offsetWidth;
+            canvas.height = canvas.offsetHeight;
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // 绘制用户活跃度饼图
+            const userMap = new Map();
+            filteredData.forEach(msg => {
+                userMap.set(msg.username, (userMap.get(msg.username) || 0) + 1);
+            });
+
+            const topUsers = Array.from(userMap.entries())
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 10);
+
+            if (topUsers.length === 0) return;
+
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            const radius = Math.min(canvas.width, canvas.height) / 3;
+
+            let currentAngle = 0;
+            const total = topUsers.reduce((sum, [, count]) => sum + count, 0);
+            const colors = ['#667eea', '#764ba2', '#ff6b6b', '#4ecdc4', '#45b7d1', '#96ceb4', '#feca57', '#ff9ff3', '#6c5ce7', '#a29bfe'];
+
+            topUsers.forEach(([username, count], index) => {
+                const sliceAngle = (count / total) * 2 * Math.PI;
+
+                ctx.beginPath();
+                ctx.moveTo(centerX, centerY);
+                ctx.arc(centerX, centerY, radius, currentAngle, currentAngle + sliceAngle);
+                ctx.closePath();
+                ctx.fillStyle = colors[index % colors.length];
+                ctx.fill();
+
+                // 绘制标签
+                const labelAngle = currentAngle + sliceAngle / 2;
+                const labelX = centerX + Math.cos(labelAngle) * (radius + 20);
+                const labelY = centerY + Math.sin(labelAngle) * (radius + 20);
+
+                ctx.fillStyle = '#333';
+                ctx.font = '12px Arial';
+                ctx.textAlign = labelX > centerX ? 'left' : 'right';
+                ctx.fillText(`${username.length > 8 ? username.substring(0, 8) + '...' : username}: ${count}`, labelX, labelY);
+
+                currentAngle += sliceAngle;
+            });
+
+            // 标题
+            ctx.fillStyle = '#333';
+            ctx.font = 'bold 16px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('用户活跃度分布', centerX, 25);
+        }
+
+        // 事件处理函数
+        function handleGranularityChange(e) {
+            currentGranularity = parseInt(e.target.value);
+            generateTimelineData();
+            drawTimeline();
+            drawTrendChart();
+        }
+
+        function handleUserSearch(e) {
+            const searchTerm = e.target.value.toLowerCase();
+            if (searchTerm === '') {
+                filteredData = rawData.filter(msg => 
+                    msg.isRobot && 
+                    msg.content !== '刚刚分享了直播间' && 
+                    !msg.username.includes('助教') && 
+                    msg.content.trim() !== ''
+                );
+            } else {
+                filteredData = rawData.filter(msg => 
+                    msg.isRobot && 
+                    msg.content !== '刚刚分享了直播间' && 
+                    !msg.username.includes('助教') && 
+                    msg.content.trim() !== '' &&
+                    msg.username.toLowerCase().includes(searchTerm)
+                );
+            }
+
+            generateTimelineData();
+            drawTimeline();
+            drawTrendChart();
+            updateStats();
+        }
+
+        function resetView() {
+            currentZoom = 1;
+            timelineOffset = 0;
+            document.getElementById('zoomLevel').textContent = '100%';
+            drawTimeline();
+        }
+
+        function exportData() {
+            const report = {
+                stats: {
+                    totalMessages: filteredData.length,
+                    activeUsers: new Set(filteredData.map(msg => msg.userId)).size,
+                    assistantMessages: assistantData.length,
+                    shareMessages: shareData.length,
+                    peakTime: timelineData.reduce((max, slot) => 
+                        slot.count > max.count ? slot : max, {count: 0, time: null}).time
+                },
+                timelineData: timelineData,
+                topUsers: Array.from(new Map(filteredData.map(msg => [msg.username, msg])).values())
+                    .reduce((map, msg) => {
+                        map.set(msg.username, (map.get(msg.username) || 0) + 1);
+                        return map;
+                    }, new Map())
+            };
+
+            const blob = new Blob([JSON.stringify(report, null, 2)], {type: 'application/json'});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = '直播分析报告.json';
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function zoomTimeline(factor) {
+            const newZoom = Math.max(0.5, Math.min(3, currentZoom * factor));
+            if (newZoom !== currentZoom) {
+                currentZoom = newZoom;
+                document.getElementById('zoomLevel').textContent = Math.round(currentZoom * 100) + '%';
+                drawTimeline();
+            }
+        }
+
+        function startDrag(e) {
+            isDragging = true;
+            dragStartX = e.clientX;
+            dragStartOffset = timelineOffset;
+            e.target.style.cursor = 'grabbing';
+        }
+
+        function drag(e) {
+            if (!isDragging) return;
+            e.preventDefault();
+            
+            const deltaX = e.clientX - dragStartX;
+            timelineOffset = dragStartOffset - deltaX;
+            
+            // 限制拖拽范围
+            const maxOffset = Math.max(0, (document.getElementById('mainCanvas').width - 80) * (currentZoom - 1));
+            timelineOffset = Math.max(0, Math.min(maxOffset, timelineOffset));
+            
+            drawTimeline();
+        }
+
+        function endDrag(e) {
+            if (isDragging) {
+                isDragging = false;
+                e.target.style.cursor = 'grab';
+            }
+        }
+
+        function switchChartTab(e) {
+            document.querySelectorAll('.chart-tab').forEach(tab => tab.classList.remove('active'));
+            e.target.classList.add('active');
+
+            const tabType = e.target.dataset.tab;
+            const trendChart = document.getElementById('trendChart');
+            const wordcloudContainer = document.getElementById('wordcloudContainer');
+
+            if (tabType === 'trend') {
+                trendChart.style.display = 'block';
+                wordcloudContainer.classList.add('hidden');
+            } else if (tabType === 'wordcloud') {
+                trendChart.style.display = 'none';
+                wordcloudContainer.classList.remove('hidden');
+            }
+        }
+
+        function showTooltip(e, text) {
+            const tooltip = document.getElementById('tooltip');
+            tooltip.textContent = text;
+            tooltip.style.left = e.pageX + 10 + 'px';
+            tooltip.style.top = e.pageY - 10 + 'px';
+            tooltip.style.opacity = '1';
+        }
+
+        function hideTooltip() {
+            const tooltip = document.getElementById('tooltip');
+            tooltip.style.opacity = '0';
+        }
+
+        function showLoading() {
+            uploadArea.innerHTML = `
+                <div class="loading">
+                    <div class="loading-spinner"></div>
+                    <div>正在处理文件...</div>
+                </div>
+            `;
+        }
+
+        function hideLoading() {
+            uploadArea.innerHTML = `
+                <div class="upload-icon">📊</div>
+                <div class="upload-text">点击或拖拽CSV文件到此处</div>
+                <div class="upload-hint">支持CSV格式文件，包含时间、用户信息和发言内容</div>
+                <input type="file" class="file-input" id="fileInput" accept=".csv">
+            `;
+            
+            // 重新绑定事件
+            const newFileInput = document.getElementById('fileInput');
+            newFileInput.addEventListener('change', handleFileSelect);
+        }
+    </script>
+</body>
+</html>
