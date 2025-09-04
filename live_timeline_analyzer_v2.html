@@ -1,0 +1,1220 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>直播公屏时间轴分析系统</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        :root {
+            --primary-gradient: linear-gradient(135deg, #667eea, #764ba2);
+            --teacher-color: #f97316;
+            --share-color: #10b981;
+            --peak-color: #ef4444;
+            --bg-color: #f8f9fa;
+        }
+
+        .timeline-container {
+            overflow-x: auto;
+            scrollbar-width: thin;
+        }
+
+        .timeline-track {
+            position: relative;
+            height: 60px;
+            margin: 10px 0;
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
+        }
+
+        .message-dot {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .message-dot:hover {
+            transform: translateY(-50%) scale(1.5);
+            z-index: 10;
+        }
+
+        .peak-pulse {
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: translateY(-50%) scale(1); }
+            50% { opacity: 0.7; transform: translateY(-50%) scale(1.2); }
+        }
+
+        .chart-container {
+            position: relative;
+            min-height: 400px;
+        }
+
+        .stats-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            padding: 1rem;
+            text-align: center;
+        }
+
+        .stats-number {
+            font-size: 2rem;
+            font-weight: bold;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .upload-area {
+            border: 2px dashed #d1d5db;
+            border-radius: 12px;
+            padding: 2rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .upload-area:hover,
+        .upload-area.dragover {
+            border-color: #667eea;
+            background-color: rgba(102, 126, 234, 0.05);
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .gradient-bg {
+            background: var(--primary-gradient);
+        }
+
+        .tooltip {
+            position: absolute;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            pointer-events: none;
+            z-index: 100;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .word-cloud-canvas {
+            max-width: 100%;
+            height: 400px;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <header class="gradient-bg text-white py-6">
+        <div class="container mx-auto px-4">
+            <h1 class="text-3xl font-bold text-center mb-6">直播公屏时间轴分析系统</h1>
+            <div class="grid grid-cols-2 md:grid-cols-6 gap-4" id="stats-cards">
+                <div class="stats-card text-gray-700">
+                    <div class="stats-number" id="total-messages">0</div>
+                    <div class="text-sm">有效消息</div>
+                </div>
+                <div class="stats-card text-gray-700">
+                    <div class="stats-number" id="active-users">0</div>
+                    <div class="text-sm">活跃用户</div>
+                </div>
+                <div class="stats-card text-gray-700">
+                    <div class="stats-number" id="teacher-interactions">0</div>
+                    <div class="text-sm">助教互动</div>
+                </div>
+                <div class="stats-card text-gray-700">
+                    <div class="stats-number" id="share-count">0</div>
+                    <div class="text-sm">分享次数</div>
+                </div>
+                <div class="stats-card text-gray-700">
+                    <div class="stats-number" id="peak-time">--:--</div>
+                    <div class="text-sm">高峰时段</div>
+                </div>
+                <div class="stats-card text-gray-700">
+                    <div class="stats-number" id="avg-per-minute">0</div>
+                    <div class="text-sm">平均/分钟</div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="container mx-auto px-4 py-6">
+        <section class="mb-8">
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <div class="upload-area mb-6" id="upload-area">
+                    <div class="text-gray-600 mb-2">
+                        <svg class="mx-auto w-12 h-12 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                        </svg>
+                        拖拽CSV文件到此处或点击上传
+                    </div>
+                    <div class="text-sm text-gray-400">支持最大2MB，10000条数据</div>
+                    <input type="file" id="file-input" accept=".csv" class="hidden">
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">搜索消息</label>
+                        <input type="text" id="search-input" placeholder="输入关键词搜索..." class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">时间粒度</label>
+                        <select id="time-granularity" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="30">30秒</option>
+                            <option value="60" selected>1分钟</option>
+                            <option value="120">2分钟</option>
+                            <option value="300">5分钟</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">缩放比例</label>
+                        <select id="zoom-level" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="0.5">50%</option>
+                            <option value="1" selected>100%</option>
+                            <option value="1.5">150%</option>
+                            <option value="2">200%</option>
+                            <option value="3">300%</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="mb-8" id="timeline-section" style="display: none;">
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h3 class="text-lg font-semibold mb-4">直播互动时间轴</h3>
+                <div class="timeline-container" id="timeline-container">
+                    <div class="timeline-scale mb-4" id="timeline-scale"></div>
+                    
+                    <div class="mb-4">
+                        <div class="flex items-center mb-2">
+                            <div class="w-4 h-4 rounded-full" style="background: linear-gradient(135deg, #667eea, #764ba2);"></div>
+                            <span class="ml-2 text-sm font-medium">普通用户消息</span>
+                        </div>
+                        <div class="timeline-track" id="main-timeline"></div>
+                    </div>
+
+                    <div class="mb-4">
+                        <div class="flex items-center mb-2">
+                            <div class="w-4 h-4 rounded-full bg-orange-500"></div>
+                            <span class="ml-2 text-sm font-medium">助教/老师消息</span>
+                        </div>
+                        <div class="timeline-track" id="teacher-timeline"></div>
+                    </div>
+
+                    <div class="mb-4">
+                        <div class="flex items-center mb-2">
+                            <div class="w-4 h-4 rounded-full bg-green-500"></div>
+                            <span class="ml-2 text-sm font-medium">分享消息</span>
+                        </div>
+                        <div class="timeline-track" id="share-timeline"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="mb-8" id="chart-section" style="display: none;">
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <div class="flex flex-wrap gap-2 mb-4">
+                    <button class="chart-tab-btn bg-blue-500 text-white px-4 py-2 rounded-md" data-chart="trend">互动趋势</button>
+                    <button class="chart-tab-btn bg-gray-200 text-gray-700 px-4 py-2 rounded-md" data-chart="wordcloud">词云分析</button>
+                    <button class="chart-tab-btn bg-gray-200 text-gray-700 px-4 py-2 rounded-md" data-chart="userrank">用户排行</button>
+                    <button class="chart-tab-btn bg-gray-200 text-gray-700 px-4 py-2 rounded-md" data-chart="sentiment">情感分析</button>
+                </div>
+                <div class="chart-container">
+                    <canvas id="chart-canvas" width="800" height="400"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <div class="text-center" id="export-section" style="display: none;">
+            <button id="export-btn" class="gradient-bg text-white px-8 py-3 rounded-lg font-semibold hover:opacity-90 transition-opacity">
+                导出为高清图片
+            </button>
+        </div>
+    </div>
+
+    <div id="tooltip" class="tooltip"></div>
+
+    <script>
+        class DataProcessor {
+            constructor() {
+                this.rawData = [];
+                this.filteredData = [];
+                this.teacherKeywords = ['助教', '老师', 'teacher'];
+                this.shareKeyword = '刚刚分享了直播间';
+            }
+
+            parseCSV(text) {
+                const lines = text.split('\n');
+                const data = [];
+                let headerFound = false;
+                let headerIndex = 0;
+
+                for (let i = 0; i < lines.length; i++) {
+                    if (lines[i].includes('时间,用户ID,用户昵称,平台,发言内容,是否机器人')) {
+                        headerFound = true;
+                        headerIndex = i + 1;
+                        break;
+                    }
+                }
+
+                if (!headerFound) {
+                    throw new Error('CSV格式错误：找不到正确的头部行');
+                }
+
+                for (let i = headerIndex; i < lines.length; i++) {
+                    const line = lines[i].trim();
+                    if (!line) continue;
+
+                    const parts = this.parseCSVLine(line);
+                    if (parts.length >= 6) {
+                        const message = {
+                            time: new Date(parts[0]),
+                            userId: parts[1],
+                            nickname: parts[2],
+                            platform: parts[3],
+                            content: parts[4],
+                            isBot: parseInt(parts[5]) === 1
+                        };
+
+                        message.type = this.classifyMessage(message);
+                        data.push(message);
+                    }
+                }
+
+                this.rawData = data;
+                return data;
+            }
+
+            parseCSVLine(line) {
+                const result = [];
+                let current = '';
+                let inQuotes = false;
+                
+                for (let i = 0; i < line.length; i++) {
+                    const char = line[i];
+                    if (char === '"') {
+                        inQuotes = !inQuotes;
+                    } else if (char === ',' && !inQuotes) {
+                        result.push(current);
+                        current = '';
+                    } else {
+                        current += char;
+                    }
+                }
+                result.push(current);
+                return result;
+            }
+
+            classifyMessage(message) {
+                if (message.isBot) return 'bot';
+                
+                const nickname = message.nickname.toLowerCase();
+                const content = message.content;
+                
+                if (this.teacherKeywords.some(keyword => nickname.includes(keyword))) {
+                    return 'teacher';
+                }
+                
+                if (content.includes(this.shareKeyword)) {
+                    return 'share';
+                }
+                
+                return 'user';
+            }
+
+            filterData(searchTerm = '') {
+                let filtered = this.rawData.filter(msg => !msg.isBot);
+                
+                if (searchTerm) {
+                    const term = searchTerm.toLowerCase();
+                    filtered = filtered.filter(msg => 
+                        msg.content.toLowerCase().includes(term) ||
+                        msg.nickname.toLowerCase().includes(term)
+                    );
+                }
+                
+                this.filteredData = filtered;
+                return filtered;
+            }
+
+            aggregateByTime(granularity = 60) {
+                const buckets = new Map();
+                
+                this.filteredData.forEach(message => {
+                    const time = message.time;
+                    const bucketTime = new Date(Math.floor(time.getTime() / (granularity * 1000)) * granularity * 1000);
+                    const key = bucketTime.getTime();
+                    
+                    if (!buckets.has(key)) {
+                        buckets.set(key, { time: bucketTime, count: 0, messages: [] });
+                    }
+                    
+                    buckets.get(key).count++;
+                    buckets.get(key).messages.push(message);
+                });
+                
+                return Array.from(buckets.values()).sort((a, b) => a.time - b.time);
+            }
+
+            getStatistics() {
+                const totalMessages = this.filteredData.length;
+                const activeUsers = new Set(this.filteredData.map(m => m.userId)).size;
+                const teacherInteractions = this.filteredData.filter(m => m.type === 'teacher').length;
+                const shareCount = this.filteredData.filter(m => m.type === 'share').length;
+                
+                const hourly = this.aggregateByTime(3600);
+                const peakHour = hourly.reduce((max, hour) => hour.count > max.count ? hour : max, { count: 0, time: new Date() });
+                
+                const timeSpan = this.rawData.length > 0 ? 
+                    (Math.max(...this.rawData.map(m => m.time)) - Math.min(...this.rawData.map(m => m.time))) / (1000 * 60) : 1;
+                const avgPerMinute = Math.round(totalMessages / timeSpan * 10) / 10;
+                
+                return {
+                    totalMessages,
+                    activeUsers,
+                    teacherInteractions,
+                    shareCount,
+                    peakTime: peakHour.time,
+                    avgPerMinute
+                };
+            }
+
+            getUserRanking() {
+                const userCounts = new Map();
+                this.filteredData.forEach(message => {
+                    const key = message.nickname;
+                    userCounts.set(key, (userCounts.get(key) || 0) + 1);
+                });
+                
+                return Array.from(userCounts.entries())
+                    .map(([nickname, count]) => ({ nickname, count }))
+                    .sort((a, b) => b.count - a.count)
+                    .slice(0, 10);
+            }
+
+            getWordFrequency() {
+                const words = new Map();
+                const stopWords = new Set(['的', '了', '是', '在', '和', '有', '我', '你', '他', '她', '它', '这', '那', '一', '不', '也', '都', '就', '要', '会', '能', '可以', '老师', '大家']);
+                
+                this.filteredData.forEach(message => {
+                    const content = message.content;
+                    for (let i = 0; i < content.length; i++) {
+                        for (let len = 1; len <= 3 && i + len <= content.length; len++) {
+                            const word = content.substring(i, i + len);
+                            if (word.length >= 2 && !stopWords.has(word) && /[\u4e00-\u9fa5]/.test(word)) {
+                                words.set(word, (words.get(word) || 0) + 1);
+                            }
+                        }
+                    }
+                });
+                
+                return Array.from(words.entries())
+                    .map(([word, count]) => ({ word, count }))
+                    .sort((a, b) => b.count - a.count)
+                    .slice(0, 50);
+            }
+
+            getSentimentAnalysis() {
+                const positiveWords = ['好', '棒', '赞', '谢谢', '太棒了', '学到了', '精彩', '实用', '666'];
+                const negativeWords = ['不', '难', '不懂', '太快', '听不懂'];
+                
+                let positive = 0, negative = 0, neutral = 0;
+                
+                this.filteredData.forEach(message => {
+                    const content = message.content.toLowerCase();
+                    let score = 0;
+                    
+                    positiveWords.forEach(word => {
+                        if (content.includes(word)) score++;
+                    });
+                    
+                    negativeWords.forEach(word => {
+                        if (content.includes(word)) score--;
+                    });
+                    
+                    if (score > 0) positive++;
+                    else if (score < 0) negative++;
+                    else neutral++;
+                });
+                
+                return { positive, negative, neutral };
+            }
+        }
+
+        class TimelineRenderer {
+            constructor(container) {
+                this.container = container;
+                this.zoom = 1;
+                this.offset = 0;
+                this.tooltip = document.getElementById('tooltip');
+            }
+
+            render(data, granularity = 60) {
+                const aggregated = app.dataProcessor.aggregateByTime(granularity);
+                if (aggregated.length === 0) return;
+
+                const timeRange = {
+                    start: aggregated[0].time,
+                    end: aggregated[aggregated.length - 1].time
+                };
+                
+                const totalWidth = Math.max(1200, this.container.offsetWidth - 40);
+                const timeSpan = timeRange.end - timeRange.start;
+
+                this.renderTimeScale(timeRange, totalWidth);
+
+                this.renderTrack('main-timeline', data.filter(m => m.type === 'user'), timeRange, totalWidth, '#667eea');
+                this.renderTrack('teacher-timeline', data.filter(m => m.type === 'teacher'), timeRange, totalWidth, '#f97316');
+                this.renderTrack('share-timeline', data.filter(m => m.type === 'share'), timeRange, totalWidth, '#10b981');
+            }
+
+            renderTimeScale(timeRange, totalWidth) {
+                const scaleContainer = document.getElementById('timeline-scale');
+                scaleContainer.innerHTML = '';
+                scaleContainer.style.width = totalWidth + 'px';
+                scaleContainer.style.height = '30px';
+                scaleContainer.style.position = 'relative';
+                scaleContainer.style.borderBottom = '1px solid #e5e7eb';
+
+                const timeSpan = timeRange.end - timeRange.start;
+
+                for (let i = 0; i <= 10; i++) {
+                    const time = new Date(timeRange.start.getTime() + (timeSpan * i / 10));
+                    const position = (i / 10) * totalWidth;
+
+                    const tick = document.createElement('div');
+                    tick.style.position = 'absolute';
+                    tick.style.left = position + 'px';
+                    tick.style.top = '0px';
+                    tick.style.width = '1px';
+                    tick.style.height = '20px';
+                    tick.style.backgroundColor = '#d1d5db';
+
+                    const label = document.createElement('div');
+                    label.style.position = 'absolute';
+                    label.style.left = (position - 30) + 'px';
+                    label.style.top = '22px';
+                    label.style.fontSize = '12px';
+                    label.style.color = '#6b7280';
+                    label.textContent = time.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
+
+                    scaleContainer.appendChild(tick);
+                    scaleContainer.appendChild(label);
+                }
+            }
+
+            renderTrack(trackId, messages, timeRange, totalWidth, color) {
+                const track = document.getElementById(trackId);
+                track.innerHTML = '';
+                track.style.width = totalWidth + 'px';
+                track.style.position = 'relative';
+
+                const timeSpan = timeRange.end - timeRange.start;
+
+                const timeGroups = new Map();
+                messages.forEach(message => {
+                    const minute = new Date(Math.floor(message.time.getTime() / 60000) * 60000);
+                    const key = minute.getTime();
+                    if (!timeGroups.has(key)) {
+                        timeGroups.set(key, []);
+                    }
+                    timeGroups.get(key).push(message);
+                });
+
+                messages.forEach((message, index) => {
+                    const position = ((message.time - timeRange.start) / timeSpan) * totalWidth;
+                    const minute = new Date(Math.floor(message.time.getTime() / 60000) * 60000);
+                    const groupCount = timeGroups.get(minute.getTime()).length;
+                    
+                    const dot = document.createElement('div');
+                    dot.className = 'message-dot' + (groupCount > 5 ? ' peak-pulse' : '');
+                    dot.style.left = position + 'px';
+                    dot.style.backgroundColor = groupCount > 5 ? '#ef4444' : color;
+                    
+                    dot.addEventListener('mouseenter', (e) => {
+                        this.showTooltip(e, message);
+                    });
+                    
+                    dot.addEventListener('mouseleave', () => {
+                        this.hideTooltip();
+                    });
+
+                    track.appendChild(dot);
+                });
+            }
+
+            showTooltip(event, message) {
+                this.tooltip.innerHTML = `
+                    <div><strong>${message.nickname}</strong></div>
+                    <div>${message.time.toLocaleTimeString('zh-CN')}</div>
+                    <div>${message.content}</div>
+                `;
+                this.tooltip.style.left = event.pageX + 10 + 'px';
+                this.tooltip.style.top = event.pageY - 10 + 'px';
+                this.tooltip.style.opacity = '1';
+            }
+
+            hideTooltip() {
+                this.tooltip.style.opacity = '0';
+            }
+        }
+
+        class ChartRenderer {
+            constructor(canvas) {
+                this.canvas = canvas;
+                this.ctx = canvas.getContext('2d');
+                this.currentChart = 'trend';
+            }
+
+            drawChart(type, data) {
+                this.currentChart = type;
+                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+                switch (type) {
+                    case 'trend':
+                        this.drawTrendChart(data);
+                        break;
+                    case 'wordcloud':
+                        this.drawWordCloud(data);
+                        break;
+                    case 'userrank':
+                        this.drawUserRanking(data);
+                        break;
+                    case 'sentiment':
+                        this.drawSentimentChart(data);
+                        break;
+                }
+            }
+
+            drawTrendChart(data) {
+                const aggregated = app.dataProcessor.aggregateByTime(300);
+                if (aggregated.length === 0) return;
+
+                const maxCount = Math.max(...aggregated.map(d => d.count));
+                const barWidth = (this.canvas.width - 80) / aggregated.length;
+                const maxHeight = this.canvas.height - 80;
+
+                const gradient = this.ctx.createLinearGradient(0, 0, 0, maxHeight);
+                gradient.addColorStop(0, '#667eea');
+                gradient.addColorStop(1, '#764ba2');
+
+                aggregated.forEach((bucket, index) => {
+                    const x = 40 + index * barWidth;
+                    const height = (bucket.count / maxCount) * maxHeight;
+                    const y = this.canvas.height - 40 - height;
+
+                    this.ctx.fillStyle = gradient;
+                    this.ctx.fillRect(x, y, barWidth - 2, height);
+
+                    if (bucket.count > 0) {
+                        this.ctx.fillStyle = '#333';
+                        this.ctx.font = '12px Arial';
+                        this.ctx.textAlign = 'center';
+                        this.ctx.fillText(bucket.count, x + barWidth/2, y - 5);
+                    }
+
+                    if (index % Math.ceil(aggregated.length / 8) === 0) {
+                        this.ctx.fillStyle = '#666';
+                        this.ctx.font = '10px Arial';
+                        this.ctx.save();
+                        this.ctx.translate(x + barWidth/2, this.canvas.height - 20);
+                        this.ctx.rotate(-Math.PI/6);
+                        this.ctx.fillText(bucket.time.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' }), 0, 0);
+                        this.ctx.restore();
+                    }
+                });
+
+                this.ctx.fillStyle = '#333';
+                this.ctx.font = 'bold 16px Arial';
+                this.ctx.textAlign = 'center';
+                this.ctx.fillText('互动趋势分析', this.canvas.width / 2, 25);
+            }
+
+            drawWordCloud(words) {
+                if (!words || words.length === 0) return;
+
+                const maxCount = Math.max(...words.map(w => w.count));
+                const centerX = this.canvas.width / 2;
+                const centerY = this.canvas.height / 2;
+
+                this.ctx.fillStyle = '#333';
+                this.ctx.font = 'bold 16px Arial';
+                this.ctx.textAlign = 'center';
+                this.ctx.fillText('高频词汇云图', centerX, 25);
+
+                const positions = [];
+                words.forEach((wordObj, index) => {
+                    const fontSize = Math.max(12, Math.min(48, (wordObj.count / maxCount) * 48));
+                    const angle = index * 0.1;
+                    const radius = index * 5 + 50;
+                    
+                    let x = centerX + Math.cos(angle) * radius;
+                    let y = centerY + Math.sin(angle) * radius;
+                    
+                    let attempts = 0;
+                    while (attempts < 50) {
+                        let overlap = false;
+                        for (let pos of positions) {
+                            const dx = x - pos.x;
+                            const dy = y - pos.y;
+                            const distance = Math.sqrt(dx * dx + dy * dy);
+                            if (distance < (fontSize + pos.fontSize) / 2) {
+                                overlap = true;
+                                break;
+                            }
+                        }
+                        
+                        if (!overlap) break;
+                        
+                        angle += 0.1;
+                        radius += 2;
+                        x = centerX + Math.cos(angle) * radius;
+                        y = centerY + Math.sin(angle) * radius;
+                        attempts++;
+                    }
+
+                    positions.push({ x, y, fontSize });
+
+                    const hue = (index * 137.508) % 360;
+                    this.ctx.fillStyle = `hsl(${hue}, 70%, 50%)`;
+                    this.ctx.font = `${fontSize}px Arial`;
+                    this.ctx.textAlign = 'center';
+                    this.ctx.fillText(wordObj.word, x, y);
+                });
+            }
+
+            drawUserRanking(users) {
+                if (!users || users.length === 0) return;
+
+                const maxCount = Math.max(...users.map(u => u.count));
+                const barHeight = 30;
+                const spacing = 5;
+                const startY = 60;
+
+                this.ctx.fillStyle = '#333';
+                this.ctx.font = 'bold 16px Arial';
+                this.ctx.textAlign = 'left';
+                this.ctx.fillText('活跃用户排行榜 TOP 10', 20, 25);
+
+                users.slice(0, 10).forEach((user, index) => {
+                    const y = startY + index * (barHeight + spacing);
+                    const barWidth = (user.count / maxCount) * (this.canvas.width - 200);
+
+                    const gradient = this.ctx.createLinearGradient(150, 0, 150 + barWidth, 0);
+                    gradient.addColorStop(0, '#667eea');
+                    gradient.addColorStop(1, '#764ba2');
+
+                    this.ctx.fillStyle = '#333';
+                    this.ctx.font = 'bold 14px Arial';
+                    this.ctx.textAlign = 'center';
+                    this.ctx.fillText(index + 1, 20, y + barHeight/2 + 5);
+
+                    this.ctx.textAlign = 'left';
+                    this.ctx.fillText(user.nickname, 40, y + barHeight/2 + 5);
+
+                    this.ctx.fillStyle = gradient;
+                    this.ctx.fillRect(150, y, barWidth, barHeight);
+
+                    this.ctx.fillStyle = '#fff';
+                    this.ctx.font = '12px Arial';
+                    this.ctx.textAlign = 'center';
+                    this.ctx.fillText(user.count, 150 + barWidth/2, y + barHeight/2 + 4);
+                });
+            }
+
+            drawSentimentChart(sentiment) {
+                const { positive, negative, neutral } = sentiment;
+                const total = positive + negative + neutral;
+                if (total === 0) return;
+
+                const centerX = this.canvas.width / 2;
+                const centerY = this.canvas.height / 2 + 20;
+                const radius = Math.min(centerX, centerY - 40) - 40;
+
+                this.ctx.fillStyle = '#333';
+                this.ctx.font = 'bold 16px Arial';
+                this.ctx.textAlign = 'center';
+                this.ctx.fillText('消息情感分析', centerX, 25);
+
+                const positiveAngle = (positive / total) * 2 * Math.PI;
+                const negativeAngle = (negative / total) * 2 * Math.PI;
+                const neutralAngle = (neutral / total) * 2 * Math.PI;
+
+                let currentAngle = -Math.PI / 2;
+
+                this.ctx.beginPath();
+                this.ctx.moveTo(centerX, centerY);
+                this.ctx.arc(centerX, centerY, radius, currentAngle, currentAngle + positiveAngle);
+                this.ctx.closePath();
+                this.ctx.fillStyle = '#10b981';
+                this.ctx.fill();
+
+                currentAngle += positiveAngle;
+
+                this.ctx.beginPath();
+                this.ctx.moveTo(centerX, centerY);
+                this.ctx.arc(centerX, centerY, radius, currentAngle, currentAngle + negativeAngle);
+                this.ctx.closePath();
+                this.ctx.fillStyle = '#ef4444';
+                this.ctx.fill();
+
+                currentAngle += negativeAngle;
+
+                this.ctx.beginPath();
+                this.ctx.moveTo(centerX, centerY);
+                this.ctx.arc(centerX, centerY, radius, currentAngle, currentAngle + neutralAngle);
+                this.ctx.closePath();
+                this.ctx.fillStyle = '#6b7280';
+                this.ctx.fill();
+
+                const legendY = centerY + radius + 40;
+                
+                this.ctx.fillStyle = '#10b981';
+                this.ctx.fillRect(centerX - 150, legendY, 15, 15);
+                this.ctx.fillStyle = '#333';
+                this.ctx.font = '12px Arial';
+                this.ctx.textAlign = 'left';
+                this.ctx.fillText(`积极 (${Math.round(positive/total*100)}%)`, centerX - 130, legendY + 12);
+
+                this.ctx.fillStyle = '#ef4444';
+                this.ctx.fillRect(centerX - 30, legendY, 15, 15);
+                this.ctx.fillStyle = '#333';
+                this.ctx.fillText(`消极 (${Math.round(negative/total*100)}%)`, centerX - 10, legendY + 12);
+
+                this.ctx.fillStyle = '#6b7280';
+                this.ctx.fillRect(centerX + 90, legendY, 15, 15);
+                this.ctx.fillStyle = '#333';
+                this.ctx.fillText(`中性 (${Math.round(neutral/total*100)}%)`, centerX + 110, legendY + 12);
+            }
+        }
+
+        class ExportManager {
+            constructor() {
+                this.exportCanvas = document.createElement('canvas');
+                this.exportCanvas.width = 1920;
+                this.exportCanvas.height = 1080;
+                this.exportCtx = this.exportCanvas.getContext('2d');
+            }
+
+            async exportToPNG() {
+                const stats = app.dataProcessor.getStatistics();
+                
+                this.exportCtx.fillStyle = '#f8f9fa';
+                this.exportCtx.fillRect(0, 0, 1920, 1080);
+
+                this.exportCtx.fillStyle = '#333';
+                this.exportCtx.font = 'bold 32px Arial';
+                this.exportCtx.textAlign = 'center';
+                this.exportCtx.fillText('直播公屏时间轴分析报告', 960, 50);
+
+                const statY = 100;
+                this.exportCtx.font = '16px Arial';
+                this.exportCtx.textAlign = 'left';
+                this.exportCtx.fillStyle = '#666';
+                this.exportCtx.fillText(`有效消息: ${stats.totalMessages}条`, 50, statY);
+                this.exportCtx.fillText(`活跃用户: ${stats.activeUsers}人`, 300, statY);
+                this.exportCtx.fillText(`助教互动: ${stats.teacherInteractions}次`, 550, statY);
+                this.exportCtx.fillText(`分享次数: ${stats.shareCount}次`, 800, statY);
+                this.exportCtx.fillText(`平均每分钟: ${stats.avgPerMinute}条`, 1050, statY);
+
+                this.drawTimelinePreview(140);
+
+                await this.drawChartsForExport(400);
+
+                this.exportCtx.fillStyle = '#999';
+                this.exportCtx.font = '12px Arial';
+                this.exportCtx.textAlign = 'right';
+                this.exportCtx.fillText(`生成时间: ${new Date().toLocaleString('zh-CN')}`, 1870, 1060);
+
+                const link = document.createElement('a');
+                link.download = `直播公屏分析_${new Date().toLocaleDateString('zh-CN').replace(/\//g, '-')}.png`;
+                link.href = this.exportCanvas.toDataURL('image/png');
+                link.click();
+            }
+
+            drawTimelinePreview(y) {
+                const width = 1820;
+                const height = 200;
+                const x = 50;
+
+                this.exportCtx.fillStyle = 'white';
+                this.exportCtx.fillRect(x, y, width, height);
+                this.exportCtx.strokeStyle = '#ddd';
+                this.exportCtx.strokeRect(x, y, width, height);
+
+                this.exportCtx.fillStyle = '#333';
+                this.exportCtx.font = 'bold 18px Arial';
+                this.exportCtx.textAlign = 'left';
+                this.exportCtx.fillText('互动时间轴概览', x + 10, y + 25);
+
+                const data = app.dataProcessor.filteredData;
+                if (data.length === 0) return;
+
+                const minTime = Math.min(...data.map(m => m.time));
+                const maxTime = Math.max(...data.map(m => m.time));
+                const timeSpan = maxTime - minTime;
+
+                const trackHeight = 15;
+                const tracks = [
+                    { data: data.filter(m => m.type === 'user'), color: '#667eea', y: y + 60 },
+                    { data: data.filter(m => m.type === 'teacher'), color: '#f97316', y: y + 90 },
+                    { data: data.filter(m => m.type === 'share'), color: '#10b981', y: y + 120 }
+                ];
+
+                tracks.forEach(track => {
+                    track.data.forEach(message => {
+                        const position = x + 20 + ((message.time - minTime) / timeSpan) * (width - 40);
+                        this.exportCtx.fillStyle = track.color;
+                        this.exportCtx.beginPath();
+                        this.exportCtx.arc(position, track.y, 3, 0, 2 * Math.PI);
+                        this.exportCtx.fill();
+                    });
+                });
+            }
+
+            drawChartsForExport(y) {
+                const chartWidth = 450;
+                const chartHeight = 300;
+                const spacing = 20;
+
+                const originalCanvas = app.chartRenderer.canvas;
+                const originalCtx = app.chartRenderer.ctx;
+
+                const tempCanvas = document.createElement('canvas');
+                tempCanvas.width = chartWidth;
+                tempCanvas.height = chartHeight;
+                app.chartRenderer.canvas = tempCanvas;
+                app.chartRenderer.ctx = tempCanvas.getContext('2d');
+
+                app.chartRenderer.drawTrendChart(app.dataProcessor.filteredData);
+                this.exportCtx.drawImage(tempCanvas, 50, y, chartWidth, chartHeight);
+
+                const words = app.dataProcessor.getWordFrequency();
+                app.chartRenderer.drawWordCloud(words);
+                this.exportCtx.drawImage(tempCanvas, 50 + chartWidth + spacing, y, chartWidth, chartHeight);
+
+                const users = app.dataProcessor.getUserRanking();
+                app.chartRenderer.drawUserRanking(users);
+                this.exportCtx.drawImage(tempCanvas, 50, y + chartHeight + spacing, chartWidth, chartHeight);
+
+                const sentiment = app.dataProcessor.getSentimentAnalysis();
+                app.chartRenderer.drawSentimentChart(sentiment);
+                this.exportCtx.drawImage(tempCanvas, 50 + chartWidth + spacing, y + chartHeight + spacing, chartWidth, chartHeight);
+
+                app.chartRenderer.canvas = originalCanvas;
+                app.chartRenderer.ctx = originalCtx;
+            }
+        }
+
+        class App {
+            constructor() {
+                this.dataProcessor = new DataProcessor();
+                this.timelineRenderer = new TimelineRenderer(document.getElementById('timeline-container'));
+                this.chartRenderer = new ChartRenderer(document.getElementById('chart-canvas'));
+                this.exportManager = new ExportManager();
+                this.currentChart = 'trend';
+                
+                this.init();
+            }
+
+            init() {
+                this.setupEventListeners();
+                this.hideDataSections();
+            }
+
+            setupEventListeners() {
+                const uploadArea = document.getElementById('upload-area');
+                const fileInput = document.getElementById('file-input');
+
+                uploadArea.addEventListener('click', () => fileInput.click());
+                uploadArea.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    uploadArea.classList.add('dragover');
+                });
+                uploadArea.addEventListener('dragleave', () => {
+                    uploadArea.classList.remove('dragover');
+                });
+                uploadArea.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    uploadArea.classList.remove('dragover');
+                    const files = e.dataTransfer.files;
+                    if (files.length > 0) {
+                        this.handleFileUpload(files[0]);
+                    }
+                });
+
+                fileInput.addEventListener('change', (e) => {
+                    if (e.target.files.length > 0) {
+                        this.handleFileUpload(e.target.files[0]);
+                    }
+                });
+
+                document.getElementById('search-input').addEventListener('input', (e) => {
+                    this.updateView(e.target.value);
+                });
+
+                document.getElementById('time-granularity').addEventListener('change', () => {
+                    this.updateTimeline();
+                });
+
+                document.getElementById('zoom-level').addEventListener('change', () => {
+                    this.updateTimeline();
+                });
+
+                document.querySelectorAll('.chart-tab-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        this.switchChart(e.target.dataset.chart);
+                        document.querySelectorAll('.chart-tab-btn').forEach(b => {
+                            b.className = 'chart-tab-btn bg-gray-200 text-gray-700 px-4 py-2 rounded-md';
+                        });
+                        e.target.className = 'chart-tab-btn bg-blue-500 text-white px-4 py-2 rounded-md';
+                    });
+                });
+
+                document.getElementById('export-btn').addEventListener('click', () => {
+                    this.exportManager.exportToPNG();
+                });
+            }
+
+            async handleFileUpload(file) {
+                if (file.size > 2 * 1024 * 1024) {
+                    alert('文件大小超过2MB限制');
+                    return;
+                }
+
+                if (!file.name.toLowerCase().endsWith('.csv')) {
+                    alert('请选择CSV文件');
+                    return;
+                }
+
+                try {
+                    this.showLoading(true);
+                    
+                    const text = await this.readFileAsText(file);
+                    const data = this.dataProcessor.parseCSV(text);
+                    
+                    if (data.length === 0) {
+                        alert('CSV文件中没有有效数据');
+                        return;
+                    }
+
+                    if (data.length > 10000) {
+                        alert(`数据量过大(${data.length}条)，已限制到前10000条`);
+                        this.dataProcessor.rawData = data.slice(0, 10000);
+                    }
+
+                    this.updateView();
+                    this.showDataSections();
+                    
+                } catch (error) {
+                    alert('文件解析失败: ' + error.message);
+                } finally {
+                    this.showLoading(false);
+                }
+            }
+
+            readFileAsText(file) {
+                return new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = (e) => resolve(e.target.result);
+                    reader.onerror = (e) => reject(e);
+                    reader.readAsText(file, 'UTF-8');
+                });
+            }
+
+            updateView(searchTerm = '') {
+                const filteredData = this.dataProcessor.filterData(searchTerm);
+                
+                if (filteredData.length === 0) {
+                    this.hideDataSections();
+                    return;
+                }
+
+                this.updateStatistics();
+                this.updateTimeline();
+                this.updateChart();
+            }
+
+            updateStatistics() {
+                const stats = this.dataProcessor.getStatistics();
+                
+                document.getElementById('total-messages').textContent = stats.totalMessages;
+                document.getElementById('active-users').textContent = stats.activeUsers;
+                document.getElementById('teacher-interactions').textContent = stats.teacherInteractions;
+                document.getElementById('share-count').textContent = stats.shareCount;
+                document.getElementById('peak-time').textContent = stats.peakTime.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
+                document.getElementById('avg-per-minute').textContent = stats.avgPerMinute;
+            }
+
+            updateTimeline() {
+                const granularity = parseInt(document.getElementById('time-granularity').value);
+                this.timelineRenderer.zoom = parseFloat(document.getElementById('zoom-level').value);
+                this.timelineRenderer.render(this.dataProcessor.filteredData, granularity);
+            }
+
+            updateChart() {
+                this.switchChart(this.currentChart);
+            }
+
+            switchChart(type) {
+                this.currentChart = type;
+                
+                let data;
+                switch (type) {
+                    case 'trend':
+                        data = this.dataProcessor.filteredData;
+                        break;
+                    case 'wordcloud':
+                        data = this.dataProcessor.getWordFrequency();
+                        break;
+                    case 'userrank':
+                        data = this.dataProcessor.getUserRanking();
+                        break;
+                    case 'sentiment':
+                        data = this.dataProcessor.getSentimentAnalysis();
+                        break;
+                }
+                
+                this.chartRenderer.drawChart(type, data);
+            }
+
+            showDataSections() {
+                document.getElementById('timeline-section').style.display = 'block';
+                document.getElementById('chart-section').style.display = 'block';
+                document.getElementById('export-section').style.display = 'block';
+            }
+
+            hideDataSections() {
+                document.getElementById('timeline-section').style.display = 'none';
+                document.getElementById('chart-section').style.display = 'none';
+                document.getElementById('export-section').style.display = 'none';
+            }
+
+            showLoading(show) {
+                const uploadArea = document.getElementById('upload-area');
+                if (show) {
+                    uploadArea.innerHTML = `
+                        <div class="loading"></div>
+                        <div class="text-gray-600 mt-2">正在解析CSV文件...</div>
+                    `;
+                } else {
+                    uploadArea.innerHTML = `
+                        <div class="text-gray-600 mb-2">
+                            <svg class="mx-auto w-12 h-12 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                            </svg>
+                            拖拽CSV文件到此处或点击上传
+                        </div>
+                        <div class="text-sm text-gray-400">支持最大2MB，10000条数据</div>
+                    `;
+                }
+            }
+        }
+
+        async function loadTestData() {
+            try {
+                const response = await fetch('test_data.csv');
+                if (response.ok) {
+                    const text = await response.text();
+                    const data = app.dataProcessor.parseCSV(text);
+                    app.updateView();
+                    app.showDataSections();
+                    console.log('测试数据加载成功:', data.length, '条记录');
+                }
+            } catch (error) {
+                console.log('测试数据加载失败:', error.message);
+            }
+        }
+
+        const app = new App();
+
+        window.addEventListener('load', () => {
+            setTimeout(loadTestData, 500);
+        });
+
+        window.runTests = function() {
+            console.log('开始自动化测试...');
+            
+            const tests = [
+                {
+                    name: '数据解析测试',
+                    test: () => {
+                        const csvText = '时间,用户ID,用户昵称,平台,发言内容,是否机器人\n2025-01-20 19:00:01,u001,张三,抖音,老师好,0';
+                        const data = app.dataProcessor.parseCSV(csvText);
+                        return data.length === 1 && data[0].nickname === '张三';
+                    }
+                },
+                {
+                    name: '数据筛选测试',
+                    test: () => {
+                        app.dataProcessor.rawData = [
+                            { time: new Date(), userId: 'u1', nickname: '张三', content: '你好', isBot: false, type: 'user' },
+                            { time: new Date(), userId: 'bot1', nickname: '机器人', content: '欢迎', isBot: true, type: 'bot' }
+                        ];
+                        const filtered = app.dataProcessor.filterData();
+                        return filtered.length === 1 && filtered[0].nickname === '张三';
+                    }
+                },
+                {
+                    name: '图表渲染测试',
+                    test: () => {
+                        app.chartRenderer.drawChart('trend', []);
+                        return true;
+                    }
+                },
+                {
+                    name: '导出功能测试',
+                    test: () => {
+                        return typeof app.exportManager.exportToPNG === 'function';
+                    }
+                }
+            ];
+
+            const results = tests.map(test => {
+                try {
+                    const result = test.test();
+                    console.log(`✓ ${test.name}: 通过`);
+                    return { name: test.name, passed: result };
+                } catch (error) {
+                    console.log(`✗ ${test.name}: 失败 - ${error.message}`);
+                    return { name: test.name, passed: false, error: error.message };
+                }
+            });
+
+            const passedCount = results.filter(r => r.passed).length;
+            console.log(`测试完成: ${passedCount}/${tests.length} 通过`);
+            
+            return {
+                total: tests.length,
+                passed: passedCount,
+                results: results
+            };
+        };
+    </script>
+</body>
+</html>
